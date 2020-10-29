@@ -1,5 +1,7 @@
 library(forecast)
 library(pracma)
+library(parallel)
+library(kde1d)
 
 ##############################################
 #Matrix form
@@ -600,6 +602,31 @@ distPars0 <- function(n, model = list(pars = c(0, 0, 0, FALSE, 2), phi = NULL, t
   
 }
 
+distPars0Parallel <- function(n, model = list(pars = c(0, 0, 0, FALSE, 2), phi = NULL, theta = NULL, mu = 0, sigma2 = 1, boxcox = TRUE, lambda = 1/3), 
+                              initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, nsim = 100, seed = 12345, ncores = detectCores() - 2) {
+  
+  cl <- makeCluster(ncores)
+  
+  clusterEvalQ(cl, library(forecast))
+  clusterEvalQ(cl, library(pracma))
+  clusterExport(cl, c('InvertQ', 'parsMat', 'SigmaMat', 'simInnov', 'simARMAProcess', 
+                      'boxcoxDeriv', 'loglikForward', 'BIC', 'optBIC', 'loglikRatio', 'loglikRatioMax', 'parsVecs', 
+                      'distPars0'))
+  clusterExport(cl, c('n', 'model', 'initLambda', 'lower', 'upper', 'max.p', 'max.d', 'max.q', 'nred', 'nsim', 'seed'), 
+                envir = environment())
+  
+  out <- parLapplyLB(cl = cl, X = 1:nsim, function(X) {
+    
+    distPars0(n, model, initLambda, lower, upper, max.p, max.d, max.q, nred, nsim, seed + X)
+
+  })
+  
+  stopCluster(cl)
+  
+  return(out)
+  
+}
+
 
 #debug(distPars0)
 
@@ -752,6 +779,31 @@ distLoglikRatio <- function(distPars0, t, n, initLambda = 1/3, lower = 0, upper 
 
 
 
+distLoglikRatioParallel <- function(dPars0, t, n, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, 
+                                    nsim = 100, seed = 12345, ncores = detectCores() - 2) {
+  
+  cl <- makeCluster(ncores)
+  
+  clusterEvalQ(cl, library(forecast))
+  clusterEvalQ(cl, library(pracma))
+  clusterExport(cl, c('InvertQ', 'parsMat', 'SigmaMat', 'simInnov', 'simARMAProcess', 
+                      'boxcoxDeriv', 'loglikForward', 'BIC', 'optBIC', 'loglikRatio', 'loglikRatioMax', 'parsVecs', 
+                      'distPars0', 'distLoglikRatio'))
+  clusterExport(cl, c('dPars0', 't', 'n', 'initLambda', 'lower', 'upper', 'max.p', 'max.d', 'max.q', 'nred', 'seed'), 
+                envir = environment())
+  
+  out <- parLapplyLB(cl = cl, X = 1:nsim, function(X) {
+    
+      distLoglikRatio(dPars0, t, n, initLambda, lower, upper, max.p, max.d, max.q, nred, 
+                                nsim = 1, seed = seed + X)
+    })
+  
+  stopCluster(cl)
+  
+  return(unlist(out))
+  
+}
+
 
 
 
@@ -767,21 +819,24 @@ critLikelihoodRatio <- function(distLoglikRatio, alpha = 0.05) {
 }
 
 
-binarySegmentation <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = minsamp, nsim1 = 100, nsim2 = 10) {
+binarySegmentation <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = minsamp, 
+                              nsim1 = 20, nsim2 = 1, GLRSApprox = TRUE) {
 
 	moVec <- rep(0, length(y))
+	Avail <- rep(TRUE, length(y))
 	
 	flg <- 0
-	
 	moInd <- 0
 	
 	while(flg == 0) {
 	
-		sumMoVec <- table(moVec)
-		checkMoVec <- sumMoVec[sumMoVec >= 2 * minsamp]
-		workMoVec <- as.numeric(names(checkMoVec]))
+		#sumMoVec <- table(moVec)
+	  sumMoVec <- aggregate(x = Avail, by = list(moVec), sum)
+		#checkMoVec <- sumMoVec[sumMoVec >= 2 * minsamp]
+	  workMoVec <- sumMoVec[which(sumMoVec[, 2] >= 2 * minsamp), 1]
+		#workMoVec <- checkMoVec
 	
-		if (sum(checkMoVec) > 0) {
+		if (length(workMoVec) > 0) {
 		
 			vv <- 0
 			
@@ -790,30 +845,53 @@ binarySegmentation <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, l
 				vv <- vv + 1
 				
 				workMo <- moVec == workMoVec[vv]
-				workY <- y[workmoVec]
+				workY <- y[workMo]
+				#checkAvail <- Avail[workMo]
 				
 				nn <- length(workY)
 				
-				step1 <- loglikRatioMax(y = workY, minsamp = minsamp)
-				
-				step2 <- distPars0(n = nn, 
-					model = list(pars = step1$model0$pars, phi = step1$model0$phi, theta = step1$model0$theta, 
-                              mu = step1$model0$mu, sigma2 = step1$model0$sigma2, boxcox = step1$model0$boxcox, lambda = step1$model0$lambda), 
-					nsim = nsim1)
-				
-				step3 <- distLoglikRatio(step2, t = step1$t, n = nn, nsim = nsim2)
-				
-				step4 <- critLikelihoodRatio(step3, alpha = alpha)
-				
-				if (step1$maxloglikRatio > step4) {
-					moInd <- moInd + 1
-					ind.begin <- min(which(workmoVec))
-					ind.end <- max(which(workmoVec))
-					moVec[ind.begin:(ind.begin + step1$t)] <- moInd
-					
-					moInd <- moInd + 1
-					moVec[(ind.begin + step1$t + 1):(ind.end)] <- moInd
-				}
+				#if (sum(checkAvail) == nn) {
+
+				  step1 <- loglikRatioMax(y = workY, minsamp = minsamp)
+				  
+				  step2 <- distPars0(n = nn, 
+				                     model = list(pars = step1$model0$pars, phi = step1$model0$phi, theta = step1$model0$theta, 
+				                                  mu = step1$model0$mu, sigma2 = step1$model0$sigma2, boxcox = step1$model0$boxcox, lambda = step1$model0$lambda), 
+				                     nsim = nsim1)
+				  
+				  step3 <- distLoglikRatio(step2, t = step1$t, n = nn, nsim = nsim2)
+				  
+				  if (GLRSApprox == TRUE) {
+				    
+				    GLRSKernel <- kde1d(step3)
+				    step4 <- qkde1d(1 - alpha, GLRSKernel)
+				    
+				  } else {
+				    
+				    step4 <- critLikelihoodRatio(step3, alpha = 1 - alpha)
+				    
+				  }
+				  
+				  
+				  if (step1$maxloglikRatio > step4) {
+				    moInd <- moInd + 1
+				    ind.begin <- min(which(workMo))
+				    ind.end <- max(which(workMo))
+				    CP <- ind.begin + step1$t
+				    moVec[ind.begin:CP] <- moInd
+				    
+				    moInd <- moInd + 1
+				    moVec[(CP + 1):(ind.end)] <- moInd
+				    
+				    cat('CP:', CP, '\n')
+				    
+				  } else {
+				    
+				    Avail[workMo] <- FALSE
+				    
+				  }
+				  
+				#} 
 
 			}
 	
@@ -823,12 +901,47 @@ binarySegmentation <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, l
 		}
 		
 	}
+	
+	moVec
 
 }
 
 
-##############################################################
+CPDARIMABC <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = minsamp, 
+                               nsim1 = 20, nsim2 = 1, GLRSApprox = TRUE, plot = TRUE, label = NULL, xlab = 'Time', ylab = 'Score'){
+  
+  CPD <- binarySegmentation(y, alpha, minsamp, initLambda, lower, upper, max.p, max.d, max.q, nred, 
+                                 nsim1, nsim2, GLRSApprox)
+  
+  CP <- aggregate(1:length(y), by = list(CPD), max)
+  CP <- CP[-which.max(CP[, 2]),] 
+  
+  
+  
+  if (plot == TRUE) {
+    
+    if (is.null(label)) {
+      plot(y, lty = 1, type = 'o')
+    } else {
+      plot(label, y, lty = 1, type = 'o')
+    }
+    
+    for (i in 1:length(CP)) {
+      abline(v = CP[i])
+    }
+  }
+  
+  return(CP)
+  
+}
 
+#time1 <- Sys.time()
+#eee <- CPDARIMABC(test)
+#time2 <- Sys.time()
+
+##############################################################
+  # EM algorithem part
+##############################################################
 invBoxcoxDeriv2nd <- function(x, lambda) {
   
   n <- length(x)
