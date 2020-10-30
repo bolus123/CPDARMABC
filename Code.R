@@ -185,6 +185,8 @@ loglikForward <- function(y, max.p = 2, max.d = 2, max.q = 2, boxcox = TRUE, lam
   
   pars <- pars[which((nsample - pars[, 5] - nred) >= 0), ]
   
+  if (length(pars) == 0) stop('Sample is not big enough')
+  
   kk <- dim(pars)[1]
   
   phi <- matrix(NA, nrow = kk, ncol = max.p)
