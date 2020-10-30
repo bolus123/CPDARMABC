@@ -909,12 +909,12 @@ CPDARIMABC <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 12, initLam
       plot(label, y, lty = 1, type = 'o')
     }
     
-    for (i in 1:length(CP)) {
-      abline(v = CP[i])
+    for (i in 1:dim(CP)[1]) {
+      abline(v = CP[i, 2])
     }
   }
   
-  return(list(CP, CPD))
+  return(list(CP = CP[, 2], Index = CPD))
   
 }
 
