@@ -173,7 +173,7 @@ boxcoxDeriv <- function(y, lambda) {
   
 }
 
-loglikForward <- function(y, max.p = 2, max.d = 2, max.q = 2, boxcox = TRUE, lambda = 0, nred = 6) {
+loglikForward <- function(y, max.p = 2, max.d = 2, max.q = 2, boxcox = TRUE, lambda = 0, nred = 6, W = NULL, Beta = NULL) {
   
   pars <- expand.grid(c(0:max.p), c(0:max.d), c(0:max.q), c(FALSE, TRUE))
   
@@ -206,6 +206,10 @@ loglikForward <- function(y, max.p = 2, max.d = 2, max.q = 2, boxcox = TRUE, lam
         
         y.boxcox <- BoxCox(y, lambda = lambda)
         
+        if (!is.null(W) & !is.null(Beta)) {
+          y.boxcox <- y.boxcox - W %*% Beta
+        }
+        
         model <- try(Arima(y.boxcox, order = c(pars[jj, 1], pars[jj, 2], pars[jj, 3]), include.mean = pars[jj, 4]), silent = TRUE)
         
         if (class(model)[1] != 'try-error') {
@@ -216,8 +220,12 @@ loglikForward <- function(y, max.p = 2, max.d = 2, max.q = 2, boxcox = TRUE, lam
         
       } else {
         
-        model <- try(Arima(y, order = c(pars[jj, 1], pars[jj, 2], pars[jj, 3]), include.mean = pars[jj, 4]), silent = TRUE)
+        if (!is.null(W) & !is.null(Beta)) {
+          y <- y - W %*% Beta
+        }
         
+        model <- try(Arima(y, order = c(pars[jj, 1], pars[jj, 2], pars[jj, 3]), include.mean = pars[jj, 4]), silent = TRUE)
+
         if (class(model)[1] != 'try-error') {
           
           loglik[jj] <- model$loglik
@@ -275,9 +283,10 @@ BIC <- function(model) {
   
 }
 
-optBIC <- function(y, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, lambda.round.digit = 8) {
+optBIC <- function(y, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, 
+                   lambda.round.digit = 8, W = NULL, Beta = NULL) {
   
-  optimizerBoxCox <- function(lambda, y, max.p = 2, max.d = 2, max.q = 2, nred = 6) {
+  optimizerBoxCox <- function(lambda, y, max.p = 2, max.d = 2, max.q = 2, nred = 6, W = NULL, Beta = NULL) {
     
     #y.length = length(y)
     
@@ -285,7 +294,7 @@ optBIC <- function(y, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d =
     
     model <- loglikForward(y = y, 
                            max.p = max.p, max.d = max.d, max.q = max.q, 
-                           boxcox = TRUE, lambda = lambda, nred = nred)
+                           boxcox = TRUE, lambda = lambda, nred = nred, W = W, Beta = Beta)
     
     out <- min(BIC(model = model))
     
@@ -304,7 +313,7 @@ optBIC <- function(y, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d =
   #######################################################
   
   model1 <- loglikForward(y = y, 
-                          max.p = max.p, max.d = max.d, max.q = max.q, boxcox = FALSE, lambda = 0, nred = nred)
+                          max.p = max.p, max.d = max.d, max.q = max.q, boxcox = FALSE, lambda = 0, nred = nred, W = W, Beta = Beta)
   BIC1 <- BIC(model = model1)
   numMinBIC1 <- which.min(BIC1)[1]
   minBIC1 <- BIC1[numMinBIC1]
@@ -314,14 +323,15 @@ optBIC <- function(y, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d =
   #######################################################
   
   lambda <- try(optim(par = initLambda, fn = optimizerBoxCox, method = 'Brent', lower = lower, upper = upper, 
-                      y = y, max.p = max.p, max.d = max.d, max.q = max.q, nred = nred), silent = TRUE)#, hessian = TRUE, control = list(parscale = 1e-2))
+                      y = y, max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = W, Beta = Beta), silent = TRUE)#, hessian = TRUE, control = list(parscale = 1e-2))
   
   #lambda <- optim(par = initLambda, fn = optimizerBoxCox, method = 'L-BFGS-B', lower = lower, upper = upper, 
   #                y = y, max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, hessian = TRUE)#, control = list(parscale = 1e-2))
   
   if (class(lambda) != 'try-error' & !is.na(lambda$value)) {
     model2 <- loglikForward(y = y, 
-                            max.p = max.p, max.d = max.d, max.q = max.q, boxcox = TRUE, lambda = round(lambda$par, lambda.round.digit), nred = nred)
+                            max.p = max.p, max.d = max.d, max.q = max.q, boxcox = TRUE, lambda = round(lambda$par, lambda.round.digit), 
+                            nred = nred, W = W, Beta = Beta)
     
     BIC2 <- BIC(model = model2)
     numMinBIC2 <- which.min(BIC2)[1]
@@ -398,27 +408,43 @@ optBIC <- function(y, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d =
 }
 
 
-loglikRatio <- function(y, t, loglik0, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6) {
+loglikRatio <- function(y, t, loglik0, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, 
+                        W = NULL, Beta = NULL) {
   
   n <- length(y)
   
   y1 <- y[1:t]
-  model1 <- optBIC(y1, initLambda = initLambda, lower = lower, upper = upper, max.p = max.p, max.d = max.d, max.q = max.q, nred = nred)
   
+  if (!is.null(W) & !is.null(Beta)) {
+    model1 <- optBIC(y1, initLambda = initLambda, lower = lower, upper = upper, 
+                     max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = as.matrix(W[1:t, ]), Beta = Beta)
+  } else {
+    model1 <- optBIC(y1, initLambda = initLambda, lower = lower, upper = upper, 
+                     max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = W, Beta = Beta)
+  }
+
   y2 <- y[(t + 1):n]
-  model2 <- optBIC(y2, initLambda = initLambda, lower = lower, upper = upper, max.p = max.p, max.d = max.d, max.q = max.q, nred = nred)
   
-  loglikRatio <- -2 * (loglik0 - (model1$loglik + model2$loglik))
+  if (!is.null(W) & !is.null(Beta)) {
+    model2 <- optBIC(y2, initLambda = initLambda, lower = lower, upper = upper, 
+                     max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = as.matrix(W[(t + 1):n, ]), Beta = Beta)
+  } else {
+    model2 <- optBIC(y2, initLambda = initLambda, lower = lower, upper = upper, 
+                     max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = W, Beta = Beta)
+  }
+
+  LLR <- -2 * (loglik0 - (model1$loglik + model2$loglik))
   
-  out <- list(loglikRatio = loglikRatio, model1 = model1, model2 = model2)
+  out <- list(loglikRatio = LLR, model1 = model1, model2 = model2)
   
-  cat('t:', t, 'model0:', loglik0, 'model1:', model1$loglik, 'model2:', model2$loglik, 'loglikRatio:', loglikRatio, '\n')
+  cat('t:', t, 'model0:', loglik0, 'model1:', model1$loglik, 'model2:', model2$loglik, 'loglikRatio:', LLR, '\n')
   
   return(out)
   
 }
 
-loglikRatioMax <- function(y, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = minsamp) {
+loglikRatioMax <- function(y, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, 
+                           max.p = 2, max.d = 2, max.q = 2, nred = minsamp, W = NULL, Beta = NULL) {
   
   n <- length(y)
   
@@ -427,7 +453,8 @@ loglikRatioMax <- function(y, minsamp = 9, initLambda = 1/3, lower = 0, upper = 
   
   loglikRatio <- rep(NA, end - start + 1)
   
-  model0 <- optBIC(y, initLambda = initLambda, lower = lower, upper = upper, max.p = max.p, max.d = max.d, max.q = max.q, nred = nred)
+  model0 <- optBIC(y, initLambda = initLambda, lower = lower, upper = upper, 
+                   max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = W, Beta = Beta)
   
   tvec <- start:end
   
@@ -439,8 +466,8 @@ loglikRatioMax <- function(y, minsamp = 9, initLambda = 1/3, lower = 0, upper = 
     
     r <- r + 1
     
-    loglikRatioModel <- loglikRatio(y, t, loglik0 = model0$loglik, initLambda = initLambda, 
-                                       lower = lower, upper = upper, max.p = max.p, max.d = max.d, max.q = max.q)
+    loglikRatioModel <- loglikRatio(y, t, loglik0 = model0$loglik, initLambda = initLambda, lower = lower, upper = upper, 
+                                    max.p = max.p, max.d = max.d, max.q = max.q, W = W, Beta = Beta)
     
     loglikRatio[r] <- loglikRatioModel$loglikRatio
     
@@ -498,8 +525,10 @@ parsVecs <- function(model) {
   
 }
 
-distPars0 <- function(n, model = list(pars = c(0, 0, 0, FALSE, 2), phi = NULL, theta = NULL, mu = 0, sigma2 = 1, boxcox = TRUE, lambda = 1/3), 
-                  initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, nsim = 100, seed = 12345) {
+distPars0 <- function(n, model = list(pars = c(1, 0, 0, FALSE, 2), phi = 0.5, theta = NULL, mu = 0, sigma2 = 1, boxcox = TRUE, lambda = 1/3), 
+                  initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, 
+                  W = NULL, Beta = NULL, 
+                  nsim = 100, seed = 12345) {
   
   set.seed(seed)
   
@@ -527,7 +556,7 @@ distPars0 <- function(n, model = list(pars = c(0, 0, 0, FALSE, 2), phi = NULL, t
 	
   for (ii in 1:nsim) {
     
-    cat('process:', ii, '/', nsim, '\n')
+    cat('Distribution of Models and Estimators:', ii, '/', nsim, '\n')
     
     flg <- 0
     
@@ -551,7 +580,7 @@ distPars0 <- function(n, model = list(pars = c(0, 0, 0, FALSE, 2), phi = NULL, t
       }
       
       mo <- try(optBIC(simVec, initLambda = initLambda, lower = lower, upper = upper, 
-                        max.p = max.p, max.d = max.d, max.q = max.q, nred = nred), silent = TRUE)
+                        max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = W, Beta = Beta), silent = TRUE)
       
       if (class(mo)[1] != 'try-error') {
         
@@ -602,36 +631,12 @@ distPars0 <- function(n, model = list(pars = c(0, 0, 0, FALSE, 2), phi = NULL, t
   
 }
 
-distPars0Parallel <- function(n, model = list(pars = c(0, 0, 0, FALSE, 2), phi = NULL, theta = NULL, mu = 0, sigma2 = 1, boxcox = TRUE, lambda = 1/3), 
-                              initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, nsim = 100, seed = 12345, ncores = detectCores() - 2) {
-  
-  cl <- makeCluster(ncores)
-  
-  clusterEvalQ(cl, library(forecast))
-  clusterEvalQ(cl, library(pracma))
-  clusterExport(cl, c('InvertQ', 'parsMat', 'SigmaMat', 'simInnov', 'simARMAProcess', 
-                      'boxcoxDeriv', 'loglikForward', 'BIC', 'optBIC', 'loglikRatio', 'loglikRatioMax', 'parsVecs', 
-                      'distPars0'))
-  clusterExport(cl, c('n', 'model', 'initLambda', 'lower', 'upper', 'max.p', 'max.d', 'max.q', 'nred', 'nsim', 'seed'), 
-                envir = environment())
-  
-  out <- parLapplyLB(cl = cl, X = 1:nsim, function(X) {
-    
-    distPars0(n, model, initLambda, lower, upper, max.p, max.d, max.q, nred, nsim, seed + X)
-
-  })
-  
-  stopCluster(cl)
-  
-  return(out)
-  
-}
-
 
 #debug(distPars0)
 
 
-distLoglikRatio <- function(distPars0, t, n, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, 
+distLoglikRatio <- function(distPars0, t, n, initLambda = 1/3, lower = 0, upper = 1, 
+                            max.p = 2, max.d = 2, max.q = 2, nred = 6, W = NULL, Beta = NULL, 
                             nsim = 100, seed = 12345) {
   
   set.seed(seed)
@@ -683,7 +688,7 @@ distLoglikRatio <- function(distPars0, t, n, initLambda = 1/3, lower = 0, upper 
 	  
 	  a <- a + 1
     
-	  cat('process:', a, '/', totsim, '\n')
+	  cat('Distribution of GLRS:', a, '/', totsim, '\n')
 	  
 	  flg <- 0
 	  flgPhi <- 0
@@ -714,7 +719,7 @@ distLoglikRatio <- function(distPars0, t, n, initLambda = 1/3, lower = 0, upper 
 		} 
 		 
         model0 <- try(optBIC(simVec2, initLambda = initLambda, lower = lower, upper = upper, 
-                    max.p = max.p, max.d = max.d, max.q = max.q, nred = nred), silent = TRUE)
+                    max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = W, Beta = Beta), silent = TRUE)
         
         if (class(model0)[1] != 'try-error') {
           
@@ -752,8 +757,8 @@ distLoglikRatio <- function(distPars0, t, n, initLambda = 1/3, lower = 0, upper 
           
           if (flgPhi * flgTheta == 1) {
             
-            llRatio <- try(loglikRatio(simVec2, t, model0$loglik, initLambda = initLambda, 
-                                       lower = lower, upper = upper, max.p = max.p, max.d = max.d, max.q = max.q, nred = nred)$loglikRatio, silent = TRUE)
+            llRatio <- try(loglikRatio(simVec2, t, model0$loglik, initLambda = initLambda, lower = lower, upper = upper, 
+                                max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = W, Beta = Beta)$loglikRatio, silent = TRUE)
             
             if (class(llRatio)[1] != 'try-error') {
               #Lambda[v, r] <- llRatio
@@ -778,40 +783,6 @@ distLoglikRatio <- function(distPars0, t, n, initLambda = 1/3, lower = 0, upper 
 }
 
 
-
-distLoglikRatioParallel <- function(dPars0, t, n, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, 
-                                    nsim = 100, seed = 12345, ncores = detectCores() - 2) {
-  
-  cl <- makeCluster(ncores)
-  
-  clusterEvalQ(cl, library(forecast))
-  clusterEvalQ(cl, library(pracma))
-  clusterExport(cl, c('InvertQ', 'parsMat', 'SigmaMat', 'simInnov', 'simARMAProcess', 
-                      'boxcoxDeriv', 'loglikForward', 'BIC', 'optBIC', 'loglikRatio', 'loglikRatioMax', 'parsVecs', 
-                      'distPars0', 'distLoglikRatio'))
-  clusterExport(cl, c('dPars0', 't', 'n', 'initLambda', 'lower', 'upper', 'max.p', 'max.d', 'max.q', 'nred', 'seed'), 
-                envir = environment())
-  
-  out <- parLapplyLB(cl = cl, X = 1:nsim, function(X) {
-    
-      distLoglikRatio(dPars0, t, n, initLambda, lower, upper, max.p, max.d, max.q, nred, 
-                                nsim = 1, seed = seed + X)
-    })
-  
-  stopCluster(cl)
-  
-  return(unlist(out))
-  
-}
-
-
-
-
-#qq <- distPars0(36, max.p = 2, max.q = 2, nsim = 10)
-
-#debug(distLoglikRatio)
-#qq1 <- distLoglikRatio(qq, t = 18, n = 36, max.p = 2, max.q = 2, nsim = 10)
-
 critLikelihoodRatio <- function(distLoglikRatio, alpha = 0.05) {
   
   quantile(distLoglikRatio, 1 - alpha)
@@ -819,14 +790,17 @@ critLikelihoodRatio <- function(distLoglikRatio, alpha = 0.05) {
 }
 
 
-binarySegmentation <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = minsamp, 
-                              nsim1 = 20, nsim2 = 1, GLRSApprox = TRUE) {
+binarySegmentation <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, 
+                              max.p = 2, max.d = 2, max.q = 2, nred = minsamp, W = NULL, Beta = NULL,  
+                              nsim1 = 20, nsim2 = 1, seed = 12345) {
 
 	moVec <- rep(0, length(y))
 	Avail <- rep(TRUE, length(y))
 	
 	flg <- 0
 	moInd <- 0
+	
+	workW <- W
 	
 	while(flg == 0) {
 	
@@ -846,20 +820,28 @@ binarySegmentation <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, l
 				
 				workMo <- moVec == workMoVec[vv]
 				workY <- y[workMo]
+				
+				if (!is.null(W) & !is.null(Beta)) {
+				  workW <- as.matrix(W)[workMo, ]
+				}
+				
 				#checkAvail <- Avail[workMo]
 				
 				nn <- length(workY)
 				
 				#if (sum(checkAvail) == nn) {
 
-				  step1 <- loglikRatioMax(y = workY, minsamp = minsamp)
+				  step1 <- loglikRatioMax(y = workY, minsamp = minsamp, initLambda = initLambda, lower = lower, upper = upper, 
+				                          max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = workW, Beta = Beta)
 				  
 				  step2 <- distPars0(n = nn, 
 				                     model = list(pars = step1$model0$pars, phi = step1$model0$phi, theta = step1$model0$theta, 
 				                                  mu = step1$model0$mu, sigma2 = step1$model0$sigma2, boxcox = step1$model0$boxcox, lambda = step1$model0$lambda), 
-				                     nsim = nsim1)
+				                     initLambda = initLambda, lower = lower, upper = upper, max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, 
+				                     W = workW, Beta = Beta, nsim = nsim1, seed = seed)
 				  
-				  step3 <- distLoglikRatio(step2, t = step1$t, n = nn, nsim = nsim2)
+				  step3 <- distLoglikRatio(step2, t = step1$t, n = nn, initLambda = initLambda, lower = lower, upper = upper, 
+				                           max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = workW, Beta = Beta, nsim = nsim2, seed = seed)
 				  
 				  if (GLRSApprox == TRUE) {
 				    
@@ -883,7 +865,7 @@ binarySegmentation <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, l
 				    moInd <- moInd + 1
 				    moVec[(CP + 1):(ind.end)] <- moInd
 				    
-				    cat('CP:', CP, '\n')
+				    cat('Begin:', ind.begin, 'End:', ind.end, 'CP:', CP, '\n')
 				    
 				  } else {
 				    
@@ -907,11 +889,12 @@ binarySegmentation <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, l
 }
 
 
-CPDARIMABC <- function(y, alpha = 0.05, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = minsamp, 
-                               nsim1 = 20, nsim2 = 1, GLRSApprox = TRUE, plot = TRUE, label = NULL, xlab = 'Time', ylab = 'Score'){
+CPDARIMABC <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = minsamp, 
+                       W = NULL, Beta = NULL,
+                       nsim1 = 20, nsim2 = 1, plot = TRUE, label = NULL, xlab = 'Time', ylab = 'Score'){
   
-  CPD <- binarySegmentation(y, alpha, minsamp, initLambda, lower, upper, max.p, max.d, max.q, nred, 
-                                 nsim1, nsim2, GLRSApprox)
+  CPD <- binarySegmentation(y, alpha, GLRSApprox, minsamp, initLambda, lower, upper, max.p, max.d, max.q, nred, W, Beta,
+                                 nsim1, nsim2)
   
   CP <- aggregate(1:length(y), by = list(CPD), max)
   CP <- CP[-which.max(CP[, 2]),] 
