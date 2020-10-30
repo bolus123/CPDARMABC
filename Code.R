@@ -207,7 +207,7 @@ loglikForward <- function(y, max.p = 2, max.d = 2, max.q = 2, boxcox = TRUE, lam
         y.boxcox <- BoxCox(y, lambda = lambda)
         
         if (!is.null(W) & !is.null(Beta)) {
-          y.boxcox <- y.boxcox - W %*% Beta
+          y.boxcox <- y.boxcox - as.matrix(W) %*% Beta
         }
         
         model <- try(Arima(y.boxcox, order = c(pars[jj, 1], pars[jj, 2], pars[jj, 3]), include.mean = pars[jj, 4]), silent = TRUE)
@@ -221,7 +221,7 @@ loglikForward <- function(y, max.p = 2, max.d = 2, max.q = 2, boxcox = TRUE, lam
       } else {
         
         if (!is.null(W) & !is.null(Beta)) {
-          y <- y - W %*% Beta
+          y <- y - as.matrix(W) %*% Beta
         }
         
         model <- try(Arima(y, order = c(pars[jj, 1], pars[jj, 2], pars[jj, 3]), include.mean = pars[jj, 4]), silent = TRUE)
@@ -328,7 +328,7 @@ optBIC <- function(y, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d =
   #lambda <- optim(par = initLambda, fn = optimizerBoxCox, method = 'L-BFGS-B', lower = lower, upper = upper, 
   #                y = y, max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, hessian = TRUE)#, control = list(parscale = 1e-2))
   
-  if (class(lambda) != 'try-error' & !is.na(lambda$value)) {
+  if (class(lambda) != 'try-error' & !is.na(lambda$value) & is.finite(lambda$value)) {
     model2 <- loglikForward(y = y, 
                             max.p = max.p, max.d = max.d, max.q = max.q, boxcox = TRUE, lambda = round(lambda$par, lambda.round.digit), 
                             nred = nred, W = W, Beta = Beta)
@@ -417,7 +417,7 @@ loglikRatio <- function(y, t, loglik0, initLambda = 1/3, lower = 0, upper = 1, m
   
   if (!is.null(W) & !is.null(Beta)) {
     model1 <- optBIC(y1, initLambda = initLambda, lower = lower, upper = upper, 
-                     max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = as.matrix(W[1:t, ]), Beta = Beta)
+                     max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = as.matrix(W)[1:t, ], Beta = Beta)
   } else {
     model1 <- optBIC(y1, initLambda = initLambda, lower = lower, upper = upper, 
                      max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = W, Beta = Beta)
@@ -427,7 +427,7 @@ loglikRatio <- function(y, t, loglik0, initLambda = 1/3, lower = 0, upper = 1, m
   
   if (!is.null(W) & !is.null(Beta)) {
     model2 <- optBIC(y2, initLambda = initLambda, lower = lower, upper = upper, 
-                     max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = as.matrix(W[(t + 1):n, ]), Beta = Beta)
+                     max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = as.matrix(W)[(t + 1):n, ], Beta = Beta)
   } else {
     model2 <- optBIC(y2, initLambda = initLambda, lower = lower, upper = upper, 
                      max.p = max.p, max.d = max.d, max.q = max.q, nred = nred, W = W, Beta = Beta)
@@ -443,8 +443,8 @@ loglikRatio <- function(y, t, loglik0, initLambda = 1/3, lower = 0, upper = 1, m
   
 }
 
-loglikRatioMax <- function(y, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, 
-                           max.p = 2, max.d = 2, max.q = 2, nred = minsamp, W = NULL, Beta = NULL) {
+loglikRatioMax <- function(y, minsamp = 12, initLambda = 1/3, lower = 0, upper = 1, 
+                           max.p = 2, max.d = 2, max.q = 2, nred = 6, W = NULL, Beta = NULL) {
   
   n <- length(y)
   
@@ -790,8 +790,8 @@ critLikelihoodRatio <- function(distLoglikRatio, alpha = 0.05) {
 }
 
 
-binarySegmentation <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, 
-                              max.p = 2, max.d = 2, max.q = 2, nred = minsamp, W = NULL, Beta = NULL,  
+binarySegmentation <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 12, initLambda = 1/3, lower = 0, upper = 1, 
+                              max.p = 2, max.d = 2, max.q = 2, nred = 6, W = NULL, Beta = NULL,  
                               nsim1 = 20, nsim2 = 1, seed = 12345) {
 
 	moVec <- rep(0, length(y))
@@ -889,12 +889,12 @@ binarySegmentation <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 9, 
 }
 
 
-CPDARIMABC <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = minsamp, 
-                       W = NULL, Beta = NULL,
-                       nsim1 = 20, nsim2 = 1, plot = TRUE, label = NULL, xlab = 'Time', ylab = 'Score'){
+CPDARIMABC <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 12, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6, 
+                       W = NULL, Beta = NULL, nsim1 = 20, nsim2 = 1, seed = 12345, 
+                       plot = TRUE, label = NULL, xlab = 'Time', ylab = 'Score'){
   
   CPD <- binarySegmentation(y, alpha, GLRSApprox, minsamp, initLambda, lower, upper, max.p, max.d, max.q, nred, W, Beta,
-                                 nsim1, nsim2)
+                                 nsim1, nsim2, seed)
   
   CP <- aggregate(1:length(y), by = list(CPD), max)
   CP <- CP[-which.max(CP[, 2]),] 
@@ -914,7 +914,7 @@ CPDARIMABC <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 9, initLamb
     }
   }
   
-  return(CP)
+  return(list(CP, CPD))
   
 }
 
@@ -1051,7 +1051,7 @@ loglikRatioEM <- function(y, t, loglik0, initLambda = 1/3, lower = 0, upper = 1,
   
 }
 
-loglikRatioMaxEM <- function(y, minsamp = 9, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = minsamp) {
+loglikRatioMaxEM <- function(y, minsamp = 12, initLambda = 1/3, lower = 0, upper = 1, max.p = 2, max.d = 2, max.q = 2, nred = 6) {
   
   n <- length(y)
   
