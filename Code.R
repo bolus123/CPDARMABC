@@ -216,6 +216,7 @@ loglikForward <- function(y, max.p = 2, max.d = 2, max.q = 2, boxcox = TRUE, lam
         
         if (class(model)[1] != 'try-error') {
         
+          # log likelihood for the raw data under Box Cox transformation
           loglik[jj] <- sum(log(boxcoxDeriv(y, lambda = lambda))) + model$loglik
           
         } 
@@ -439,7 +440,8 @@ loglikRatio <- function(y, t, loglik0, initLambda = 1/3, lower = 0, upper = 1, m
   
   out <- list(loglikRatio = LLR, model1 = model1, model2 = model2)
   
-  cat('t:', t, 'model0:', loglik0, 'model1:', model1$loglik, 'model2:', model2$loglik, 'loglikRatio:', LLR, '\n')
+  cat('t:', t, 'model0:', loglik0, 'model1:', model1$loglik, 'model2:', model2$loglik, 
+      'sum:', model1$loglik + model2$loglik, 'loglikRatio:', LLR, '\n')
   
   return(out)
   
@@ -491,7 +493,8 @@ loglikRatioMax <- function(y, minsamp = 12, initLambda = 1/3, lower = 0, upper =
     model0 = model0, 
     model1 = model1, 
     model2 = model2,
-    n = n)
+    n = n,
+    loglikRatioVec = loglikRatio)
   
   out
   
@@ -791,7 +794,7 @@ critLikelihoodRatio <- function(distLoglikRatio, alpha = 0.05) {
   
 }
 
-
+# need to output all GLRs for different levels
 binarySegmentation <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 12, initLambda = 1/3, lower = 0, upper = 1, 
                               max.p = 2, max.d = 2, max.q = 2, nred = 6, W = NULL, Beta = NULL,  
                               nsim1 = 20, nsim2 = 1, seed = 12345) {
@@ -802,10 +805,17 @@ binarySegmentation <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 12,
 	flg <- 0
 	moInd <- 0
 	
+	level <- 0
+	levVec <- vector()
+	traceMat <- vector()
+	tracePvalueMat <- vector()
+	
 	workW <- W
 	
 	while(flg == 0) {
 	
+	  level <- level + 1
+	  
 		#sumMoVec <- table(moVec)
 	  sumMoVec <- aggregate(x = Avail, by = list(moVec), sum)
 		#checkMoVec <- sumMoVec[sumMoVec >= 2 * minsamp]
@@ -848,26 +858,36 @@ binarySegmentation <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 12,
 				  if (GLRSApprox == TRUE) {
 				    
 				    GLRSKernel <- kde1d(step3)
-				    step4 <- qkde1d(1 - alpha, GLRSKernel)
+				    #step4 <- qkde1d(1 - alpha, GLRSKernel)
+				    step4 <- 1 - pkde1d(step1$maxloglikRatio, GLRSKernel) #pvalue
 				    
 				  } else {
 				    
-				    step4 <- critLikelihoodRatio(step3, alpha = 1 - alpha)
+				    root.finding <- function(alpha0, q, empDist) {
+				      q - critLikelihoodRatio(empDist, alpha = 1 - alpha0)
+				    }
+				    
+				    step4 <- 1 - uniroot(root.finding, interval = c(0, 1), q = step1$maxloglikRatio, empDist = step3)$root
 				    
 				  }
 				  
+				  cat('pvalue:', step4, '\n')
 				  
-				  if (step1$maxloglikRatio > step4) {
+				  if (alpha > step4) {
 				    moInd <- moInd + 1
 				    ind.begin <- min(which(workMo))
 				    ind.end <- max(which(workMo))
-				    CP <- ind.begin + step1$t
+				    CP <- ind.begin + step1$t - 1
 				    moVec[ind.begin:CP] <- moInd
 				    
 				    moInd <- moInd + 1
 				    moVec[(CP + 1):(ind.end)] <- moInd
 				    
 				    cat('Begin:', ind.begin, 'End:', ind.end, 'CP:', CP, '\n')
+				    
+				    #levVec <- c(levVec, level)
+				    #traceMat <- rbind(traceMat, )
+				    #tracePvalueMat <- rbind(tracePvalueMat, )
 				    
 				  } else {
 				    
@@ -887,6 +907,7 @@ binarySegmentation <- function(y, alpha = 0.05, GLRSApprox = TRUE, minsamp = 12,
 	}
 	
 	moVec
+	#list(CPD = moVec, )
 
 }
 
