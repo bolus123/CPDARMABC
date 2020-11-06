@@ -1,14 +1,16 @@
-#include <math.h>
 #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
+# include <omp.h>
 
 
+//using namespace Rcpp;
 
-// [[Rcpp::export]]
-Rcpp::List optimCpp(const Rcpp::NumericVector& x, const Rcpp::NumericVector& order, const Rcpp::LogicalVector& include_mean) {
-  Rcpp::Function optim_("arima");
-  Rcpp::List out = optim_(Rcpp::Named("x", x),
-                          Rcpp::Named("order", order),
-                          Rcpp::Named("include.mean", include_mean));
-  return(out);
+// [[Rcpp::export()]]
+void omp2 (int t = 1) {
+  omp_set_num_threads(t) ;
+# pragma omp parallel for
+  for (int i = 0 ; i < 10 ; i++) {
+    Rcpp::Rcout << " " << i << " " ;
+  }
+  Rcpp::Rcout << std::endl ;
 }
