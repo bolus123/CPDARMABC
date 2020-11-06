@@ -708,10 +708,10 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   double minCrit = LONG_LONG_MAX;
   double tmpCrit;
   Rcpp::List minModel;
-  int errCode1 = 0;
-  int errCode2 = 0;
-  int errCode3 = 0;
-  int errCode4 = 0;
+  //int errCode1;
+  //int errCode2;
+  //int errCode3;
+  //int errCode4;
   
   //// with mean
   try {
@@ -722,10 +722,10 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
       minCrit = modelNoBoxCoxWithMean["critVal"];
       minModel = modelNoBoxCoxWithMean;
     } 
-    
+    //int errCode1 = 0;
     //Rcpp::Rcout << "minCrit:" << minCrit << "\n";
   } catch(...) {
-    errCode1 = 1;
+    //int errCode1 = 1;
   }
   
   try{
@@ -741,9 +741,10 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
         minCrit = tmpCrit;
         minModel = modelBoxCoxWithMean;
       }
-    }  
+    }
+    //int errCode2 = 0;
   } catch(...) {
-    errCode2 = 1;
+    //int errCode2 = 1;
   }
   
   
@@ -760,9 +761,10 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
         minCrit = tmpCrit;
         minModel = modelNoBoxCoxNoMean;
       }
-    } 
+    }
+    //int errCode3 = 0;
   } catch(...) {
-    errCode3 = 1;
+    //int errCode3 = 1;
   }
   
   try{
@@ -778,9 +780,10 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
         minCrit = tmpCrit;
         minModel = modelBoxCoxNoMean;
       }
-    } 
+    }
+    //int errCode4 = 0;
   } catch(...) {
-    errCode4 = 1;
+    //int errCode4 = 1;
   }
 
   return minModel;
@@ -835,7 +838,7 @@ Rcpp::List loglikRatioMax(const arma::colvec& Y, const int& minSize,
   arma::colvec llrVec(n);
   llrVec.fill(LONG_LONG_MIN);
   
-  int k;
+  int k = 0;
   
   if (BetaFlg == 1) {
     k = W.n_cols;
@@ -1104,7 +1107,7 @@ arma::colvec distLoglikRatio(const int& n, const int& t, const Rcpp::List& distP
   int j;
   int k;
   int a;
-  int kk;
+  int kk = 0;
   
   if (BetaFlg == 1) {
     kk = W.n_cols;
@@ -1354,13 +1357,12 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
   double maxllr = 0;
   
   int minUpdateIdx, maxUpdateIdx;
-    
   
   int level = 0;
   
   int flg = 0;
   int g = 0;
-  double tmpT = 0;
+  //double tmpT = 0;
   int t = 0;
   int Finder = 0;
   
@@ -1493,7 +1495,6 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
   return out = Rcpp::List::create(Rcpp::Named("GroupVec") = GroupVec);
 
 }
-
 
 
 //double loglik(const arma::colvec& Y, const arma::mat& SigMat, const double& mu, const double& sigma2, 
