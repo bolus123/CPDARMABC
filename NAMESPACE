@@ -1,0 +1,15 @@
+useDynLib(CPDARMABC, .registration=TRUE)
+
+import("Rcpp")
+import("RcppArmadillo")
+importFrom("forecast", "Arima")
+importFrom("stats", "quantile")
+importFrom("kde1d", "kde1d", "qkde1d")
+
+export("simARIMA")
+export("BCBD")
+export("invBCBD")
+export("fastLm")
+export("distPars")
+export("distLoglikRatio")
+export("binSeg")
