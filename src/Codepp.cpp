@@ -1336,9 +1336,11 @@ arma::colvec distLoglikRatio(const int& n, const int& t, const Rcpp::List& distP
 
 
 Rcpp::NumericVector returnCritValKDECpp(const arma::colvec& x, const double& alpha) {
-  Rcpp::Environment rEnv = Rcpp::Environment::global_env();
-  Rcpp::Function rfun = rEnv["returnCritValKDE"];
-  Rcpp::NumericVector out = rfun(Rcpp::Named("x", x), Rcpp::Named("alpha", alpha));
+  Rcpp::Environment rEnv = Rcpp::Environment::namespace_env("kde1d");
+  Rcpp::Function rfun = rEnv["kde1d"];
+  Rcpp::Function qrfun = rEnv["qkde1d"];
+  Rcpp::List tmp = rfun(Rcpp::Named("x", x));
+  Rcpp::NumericVector out = qrfun(Rcpp::Named("p", 1 - alpha), Rcpp::Named("obj", tmp));
   return out;
 }
 
@@ -1807,5 +1809,8 @@ double simCPDARIMABC(const int& n, const int& t, const double& alpha, const int&
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
+
+
+////////////////////
 
 
