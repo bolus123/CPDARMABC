@@ -1786,13 +1786,14 @@ double simCPDARIMABC(const int& n, const int& t, const double& alpha, const int&
     }
     
     criticalVal = step4(0);
-        
+    Rcpp::Rcout << "criticalVal:" << criticalVal << "\n";
+    
     if (llr0 >= criticalVal) {
       //out(i) = 1;
       out = 1;
     } else {
       //out(i) = 0;
-      out = 1;
+      out = 0;
     }
     
   //}
