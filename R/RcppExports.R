@@ -17,10 +17,6 @@ invBCBD <- function(X, lambda) {
     .Call(`_CPDARMABC_invBCBD`, X, lambda)
 }
 
-fastLm <- function(X, y) {
-    .Call(`_CPDARMABC_fastLm`, X, y)
-}
-
 distPars <- function(n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr) {
     .Call(`_CPDARMABC_distPars`, n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr)
 }
@@ -29,11 +25,7 @@ distLoglikRatio <- function(n, t, distPars0, lowerLambda, upperLambda, breakPoin
     .Call(`_CPDARMABC_distLoglikRatio`, n, t, distPars0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr)
 }
 
-binSeg <- function(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim1, nsim2, maxErr) {
-    .Call(`_CPDARMABC_binSeg`, Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim1, nsim2, maxErr)
-}
-
-simCPDARIMABC <- function(n, t, alpha, IC, model01, model02, GLRSApprox, lowerLambda, upperLambda, breakPoint, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim1, nsim2, maxErr) {
-    .Call(`_CPDARMABC_simCPDARIMABC`, n, t, alpha, IC, model01, model02, GLRSApprox, lowerLambda, upperLambda, breakPoint, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim1, nsim2, maxErr)
+binSeg <- function(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr) {
+    .Call(`_CPDARMABC_binSeg`, Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr)
 }
 

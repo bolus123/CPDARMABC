@@ -2,7 +2,8 @@
 \alias{binSeg}
 \title{abc}
 \usage{
-binSeg(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim1, nsim2, maxErr)
+binSeg(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, 
+	BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr)
 }
 \arguments{
   \item{Y}{ abc }
@@ -21,6 +22,7 @@ binSeg(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, Beta
   \item{max_q}{ abc }
   \item{tol}{ abc }
   \item{maxIter}{ abc }
+  \item{maxLev}{ abc }
   \item{innovDist}{ abc }
   \item{nsim1}{ abc }
   \item{nsim2}{ abc }
