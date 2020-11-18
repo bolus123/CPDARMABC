@@ -117,8 +117,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // binSeg
-Rcpp::List binSeg(const arma::colvec& Y, const double& alpha, const int& GLRSApprox, const int& minSize, const double& lowerLambda, const double& upperLambda, const int& breakPoint, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, const int& maxIter, const int& maxLev, const Rcpp::String& innovDist, const int& nsim1, const int& nsim2, const int& maxErr);
-RcppExport SEXP _CPDARMABC_binSeg(SEXP YSEXP, SEXP alphaSEXP, SEXP GLRSApproxSEXP, SEXP minSizeSEXP, SEXP lowerLambdaSEXP, SEXP upperLambdaSEXP, SEXP breakPointSEXP, SEXP BetaFlgSEXP, SEXP WSEXP, SEXP BetaSEXP, SEXP critSEXP, SEXP max_pSEXP, SEXP max_dSEXP, SEXP max_qSEXP, SEXP tolSEXP, SEXP maxIterSEXP, SEXP maxLevSEXP, SEXP innovDistSEXP, SEXP nsim1SEXP, SEXP nsim2SEXP, SEXP maxErrSEXP) {
+Rcpp::List binSeg(const arma::colvec& Y, const double& alpha, const int& GLRSApprox, const int& minSize, const double& lowerLambda, const double& upperLambda, const int& breakPoint, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, const int& maxIter, const double& maxLev, const Rcpp::String& innovDist, const int& nsim1, const int& nsim2, const int& maxErr, const int& minNonNAN);
+RcppExport SEXP _CPDARMABC_binSeg(SEXP YSEXP, SEXP alphaSEXP, SEXP GLRSApproxSEXP, SEXP minSizeSEXP, SEXP lowerLambdaSEXP, SEXP upperLambdaSEXP, SEXP breakPointSEXP, SEXP BetaFlgSEXP, SEXP WSEXP, SEXP BetaSEXP, SEXP critSEXP, SEXP max_pSEXP, SEXP max_dSEXP, SEXP max_qSEXP, SEXP tolSEXP, SEXP maxIterSEXP, SEXP maxLevSEXP, SEXP innovDistSEXP, SEXP nsim1SEXP, SEXP nsim2SEXP, SEXP maxErrSEXP, SEXP minNonNANSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -138,12 +138,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type max_q(max_qSEXP);
     Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
     Rcpp::traits::input_parameter< const int& >::type maxIter(maxIterSEXP);
-    Rcpp::traits::input_parameter< const int& >::type maxLev(maxLevSEXP);
+    Rcpp::traits::input_parameter< const double& >::type maxLev(maxLevSEXP);
     Rcpp::traits::input_parameter< const Rcpp::String& >::type innovDist(innovDistSEXP);
     Rcpp::traits::input_parameter< const int& >::type nsim1(nsim1SEXP);
     Rcpp::traits::input_parameter< const int& >::type nsim2(nsim2SEXP);
     Rcpp::traits::input_parameter< const int& >::type maxErr(maxErrSEXP);
-    rcpp_result_gen = Rcpp::wrap(binSeg(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr));
+    Rcpp::traits::input_parameter< const int& >::type minNonNAN(minNonNANSEXP);
+    rcpp_result_gen = Rcpp::wrap(binSeg(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN));
     return rcpp_result_gen;
 END_RCPP
 }
