@@ -31,7 +31,7 @@ int InvertQ(const arma::colvec& coef){
   //Rcpp::Rcout << "checkCorr2:" << checkCorr2  << "\n";
   
   if (checkCorr1 == 1 && checkCorr2 == 1 && checkCorr3 == 1) {
-  
+    
     for (int i = 0; i < k; i++) {
       for (int j = 0; j < k; j++){
         if (i == 0) {
@@ -122,7 +122,7 @@ arma::mat DifMat(const int& n, const arma::colvec& order) {
 
 // [[Rcpp::export]]
 arma::mat OmegaMat(const int& n, const arma::colvec& order, const arma::colvec& phi, const arma::colvec& theta){
-  arma::mat out;
+  
   arma::mat phiMat(n - order(1), n - order(1), arma::fill::eye);
   arma::mat thetaMat(n - order(1), n - order(1), arma::fill::eye);
   arma::mat Dif;
@@ -162,6 +162,67 @@ arma::mat OmegaMat(const int& n, const arma::colvec& order, const arma::colvec& 
   return OmegaMat;
   
 }
+
+//// [[Rcpp::export]]
+//arma::colvec lowerLimEps(const int& n, const arma::colvec& order, 
+//                         const arma::colvec& phi, const arma::colvec& theta, const double& lambda, 
+//                         const double& mu, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta){
+//  
+//  arma::colvec out;
+//  
+//  arma::mat phiMat(n - order(1), n - order(1), arma::fill::eye);
+//  arma::mat thetaMat(n - order(1), n - order(1), arma::fill::eye);
+//  arma::mat Dif;
+//  arma::mat GammaMat;
+//  arma::mat I(n - order(1), n - order(1), arma::fill::eye);
+//  
+//  arma::colvec lambdaVec(n);
+//  lambdaVec.fill(1 / lambda);
+//  
+//  arma::colvec muVec(n, arma::fill::zeros);
+//  
+//  if (order(1) == 0) {
+//    muVec.fill(mu);
+//  }
+//  
+//  if (BetaFlg > 0) {
+//    muVec = muVec + W * Beta;
+//  }
+//  
+//  if (order(0) > 0) {
+//    phiMat =  arma::trimatl(parsMat(n - order(1), -phi));
+//  } 
+//  
+//  if (order(2) > 0) {
+//    thetaMat = arma::trimatl(parsMat(n - order(1), theta));
+//  } 
+//  
+//  if (order(1) > 0) {
+//    
+//    Dif = DifMat(n, order);
+//    GammaMat = phiMat * Dif;
+//    //LeftMat = phiMat * Dif;
+//    //OmegaMat = arma::pinv(phiMat * Dif) * thetaMat;
+//    
+//  } else {
+//    
+//    //LeftMat = phiMat;
+//    //OmegaMat = arma::inv(phiMat) * thetaMat;
+//    GammaMat = phiMat;
+//    //OmegaMat = arma::solve(phiMat, I, arma::solve_opts::allow_ugly) * thetaMat;
+//    
+//  }
+//  
+//  GammaMat = arma::solve(thetaMat, I, arma::solve_opts::allow_ugly) * GammaMat;
+//  out = (-1) * GammaMat * (lambdaVec + muVec);
+//  
+//  //RhoMat = arma::inv(thetaMat) * LeftMat;
+//  //out = OmegaMat * OmegaMat.t();
+//  //gamma0 = diagvec(out);
+//  
+//  return out;
+//  
+//}
 
 
 
@@ -241,139 +302,46 @@ arma::colvec simARIMA(const double& mu, const double& sigma2, const Rcpp::String
   
 }
 
+
+
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
 
 
-//// [[Rcpp::export]]
-//Rcpp::NumericVector BCBDCpp(const arma::colvec& x, const double& lambda) {
-//  Rcpp::Environment pkg = Rcpp::Environment::namespace_env("forecast"); 
-//  Rcpp::Function rfunction = pkg["BoxCox"];  
-//  Rcpp::NumericVector out = rfunction(Rcpp::Named("x", x), Rcpp::Named("lambda", lambda));
-//  return out;
-//}
-//
-//// [[Rcpp::export]]
-//arma::colvec BCBD(const arma::colvec& Y, const double& lambda) {
-//  Rcpp::NumericVector tmp = BCBDCpp(Y, lambda); 
-//  int n = Y.n_elem;
-//  arma::colvec out(n);
-//  
-//  for (int i = 0; i < n; i++) {
-//    out(i) = tmp(i);
-//  }
-//  
-//  return out;
-//}
-
-// [[Rcpp::export]]
-arma::colvec BCBD(const arma::colvec& Y, const double& lambda) {
-  arma::colvec out;
-  
-  if (lambda != 0) {
-    
-    out = (arma::sign(Y) % arma::pow(arma::abs(Y), lambda) - 1) / lambda;
-    
-  } else {
-    
-    out = arma::log(Y);
-    
-  }
-  
-  return out;
-}
-
-//// [[Rcpp::export]]
-//Rcpp::NumericVector invBCBDCpp(const arma::colvec& x, const double& lambda) {
-//  Rcpp::Environment pkg = Rcpp::Environment::namespace_env("forecast"); 
-//  Rcpp::Function rfunction = pkg["InvBoxCox"];  
-//  Rcpp::NumericVector out = rfunction(Rcpp::Named("x", x), Rcpp::Named("lambda", lambda));
-//  return out;
-//}
-//
-//// [[Rcpp::export]]
-//arma::colvec invBCBD(const arma::colvec& X, const double& lambda) {
-//  Rcpp::NumericVector tmp = invBCBDCpp(X, lambda); 
-//  int n = X.n_elem;
-//  arma::colvec out(n);
-//  
-//  for (int i = 0; i < n; i++) {
-//    out(i) = tmp(i);
-//  }
-//  
-//  return out;
-//}
 
 
 // [[Rcpp::export]]
-arma::colvec invBCBD(const arma::colvec& X, const double& lambda) {
-  arma::colvec out;
-  arma::colvec tmp;
+arma::colvec YeoJohnson(const arma::colvec& Y, const double& lambda) {
   
-  if (lambda != 0) {
-    tmp = lambda * X + 1;
-    out = arma::sign(tmp) % arma::pow(arma::abs(tmp), 1 / lambda);
-  } else {
-    out = arma::exp(X);
-  }
+  int n = Y.n_elem;
   
-  return out;
-}
-
-//// [[Rcpp::export]]
-//arma::colvec BCBD(const arma::colvec& Y, const double& lambda) {
-//  
-//  arma::colvec out;
-//  
-//  if (lambda != 0) {
-//    
-//    out = (arma::pow(arma::abs(Y), lambda) * arma::sign(Y) - 1) / lambda;
-//    
-//  } else if (lambda == 0) {
-//    
-//    out = arma::log(Y);
-//    
-//  }
-//  
-//  return out;
-//  
-//} 
-
-//// [[Rcpp::export]]
-//arma::colvec invBCBD(const arma::colvec& X, const double& lambda) {
-//  
-//  arma::colvec out;
-//  arma::colvec tmp;
-//  
-//  if (lambda != 0) {
-//    tmp = X * lambda + 1;
-//    Rcpp::Rcout << "tmp:" << tmp  << "\n";
-//    Rcpp::Rcout << "1 / lambda:" << 1 / lambda  << "\n";
-//    out = arma::pow(arma::sign(tmp) * arma::abs(tmp), -3); //arma::exp(arma::log(1 + lambda * X) / lambda); 
-//    
-//  } else if (lambda == 0) {
-//    
-//    out = arma::exp(X);
-//    
-//  }
-//  
-//  return out;
-//  
-//} 
-
-
-arma::colvec BCBD1stDeriv(const arma::colvec& Y, const double& lambda) {
+  arma::colvec out(n);
+  double tmp;
   
-  arma::colvec out;
+  int i = 0;
   
-  if (lambda != 0) {
-    
-    out = arma::pow(arma::abs(Y), lambda - 1);
-    
-  } else if (lambda == 0) {
-    
-    out = arma::pow(Y, -1);
-    
+  for (i = 0; i < n; i++) {
+  
+	tmp = Y(i);
+	
+	if (tmp >= 0) {
+		
+		if (lambda != 0) {
+			out(i) = (std::pow(tmp + 1, lambda) - 1) / lambda;
+		} else {
+			out(i) = std::log(tmp + 1);
+		}
+		
+	} else if (tmp < 0) {
+		
+		if (lambda != 2) {
+			out(i) = (-1) * (std::pow((-1) * tmp + 1, 2 - lambda) - 1) / (2 - lambda);
+		} else {
+			out(i) = (-1) * std::log((-1) * tmp + 1);
+		}
+		
+	}
+  
   }
   
   return out;
@@ -381,36 +349,121 @@ arma::colvec BCBD1stDeriv(const arma::colvec& Y, const double& lambda) {
 }
 
 
-arma::colvec invBCBD2ndDeriv(const arma::colvec& X, const double& lambda) {
+
+// [[Rcpp::export]]
+arma::colvec invYeoJohnson(const arma::colvec& X, const double& lambda) {
+  int n = X.n_elem;
   
-  arma::colvec out;
-  arma::colvec tmp;
-  //arma::colvec signTmp;
-  //arma::colvec powTmp;
+  arma::colvec out(n);
+  double tmp;
   
-  if (lambda != 0) {
-    tmp = lambda * X + 1;
-    //signTmp = arma::sign(tmp);
-    //powTmp = arma::pow(arma::abs(tmp), 1 / lambda - 2);
-    //Rcpp::Rcout << "tmp:" << tmp << "\n";
-    //Rcpp::Rcout << "arma::sign(tmp):" << arma::sign(tmp) << "\n";
-    //Rcpp::Rcout << "std::pow(lambda, 2):" << std::pow(lambda, 2) << "\n";
-    //Rcpp::Rcout << "arma::abs(tmp):" << arma::abs(tmp) << "\n";
-    
-    out = (1 / lambda - 1) * std::pow(lambda, 2) * arma::sign(tmp) % arma::pow(arma::abs(tmp), 1 / lambda - 2);
-    
-  } else if (lambda == 0) {
-    
-    out = arma::exp(X);
-    
+  int i = 0;
+  
+  for (i = 0; i < n; i++) {
+  
+	tmp = X(i);
+	
+	if (tmp >= 0) {
+		
+		if (lambda != 0) {
+			out(i) = std::pow(lambda * tmp + 1, 1 / lambda) - 1;
+		} else {
+			out(i) = std::exp(tmp) - 1;
+		}
+		
+	} else if (tmp < 0) {
+		
+		if (lambda != 2) {
+			out(i) = (-1) * std::pow((-1) * (2 - lambda) * tmp + 1, 1 / (2 - lambda)) + 1;
+		} else {
+			out(i) = (-1) * std::exp((-1) * tmp) + 1;
+		}
+		
+	}
+  
+  }
+  
+  return out;
+}
+
+
+arma::colvec YeoJohnson1stDeriv(const arma::colvec& Y, const double& lambda) {
+  
+  int n = Y.n_elem;
+  
+  arma::colvec out(n);
+  double tmp;
+  
+  int i = 0;
+  
+  for (i = 0; i < n; i++) {
+  
+	tmp = Y(i);
+	
+	if (tmp >= 0) {
+		
+		if (lambda != 0) {
+			out(i) = std::pow(tmp + 1, lambda - 1);
+		} else {
+			out(i) = 1 / (tmp + 1);
+		}
+		
+	} else if (tmp < 0) {
+		
+		if (lambda != 2) {
+			out(i) = std::pow((-1) * tmp + 1, 2 - lambda - 1);
+		} else {
+			out(i) = 1 / ((-1) * tmp + 1);
+		}
+		
+	}
+  
   }
   
   return out;
   
 }
 
-arma::colvec biasajdBCBD(const arma::colvec& pred, const double& lambda, const double& sigma2) {
-  arma::colvec out = invBCBD(pred, lambda) + invBCBD2ndDeriv(pred, lambda) / 2 * sigma2;
+
+arma::colvec invYeoJohnson2stDeriv(const arma::colvec& X, const double& lambda) {
+  
+  int n = X.n_elem;
+  
+  arma::colvec out(n);
+  double tmp;
+  
+  int i = 0;
+  
+  for (i = 0; i < n; i++) {
+  
+	tmp = X(i);
+	
+	if (tmp >= 0) {
+		
+		if (lambda != 0) {
+			out(i) = (1 - lambda) * std::pow(lambda * tmp + 1, 1 / lambda - 2);
+		} else {
+			out(i) = std::exp(tmp);
+		}
+		
+	} else if (tmp < 0) {
+		
+		if (lambda != 2) {
+			out(i) = (1 - lambda) * std::pow((-1) * (2 - lambda) * tmp + 1, 1 / (2 - lambda) - 2);
+		} else {
+			out(i) = (-1) * std::exp((-1) * tmp);
+		}
+		
+	}
+  
+  }
+  
+  return out;
+  
+}
+
+arma::colvec biasadjYeoJohnson(const arma::colvec& pred, const double& lambda, const double& sigma2) {
+  arma::colvec out = invYeoJohnson(pred, lambda) + invYeoJohnson2stDeriv(pred, lambda) / 2 * sigma2;
   return out;
 }
 
@@ -533,7 +586,7 @@ double AICc(const double& loglik, const int& npars, const int& nobs) {
 
 
 Rcpp::List loglik(const arma::colvec& Y, const arma::colvec& order, const int& include_mean, 
-                  const int& BCBDFlg, const double& lambda, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta) {
+                  const int& YeoJohnsonFlg, const double& lambda, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta) {
   
   Rcpp::List out;
   double loglik;
@@ -550,12 +603,12 @@ Rcpp::List loglik(const arma::colvec& Y, const arma::colvec& order, const int& i
   
   X = Y;
   
-  if (BCBDFlg == 0) {
+  if (YeoJohnsonFlg == 0) {
     loglik2 = 0;
   } else {
     npars = npars + 1;
-    X = BCBD(X, lambda);
-    loglik2 = arma::sum(arma::log(BCBD1stDeriv(Y, lambda)));
+    X = YeoJohnson(X, lambda);
+    loglik2 = arma::sum(arma::log(YeoJohnson1stDeriv(Y, lambda)));
   }
   
   if (BetaFlg == 1) {
@@ -575,8 +628,8 @@ Rcpp::List loglik(const arma::colvec& Y, const arma::colvec& order, const int& i
   out["bic"] = BIC(loglik, npars, out["nobs"]);
   out["aicc"] = AICc(loglik, npars, out["nobs"]);
   
-  if (BCBDFlg == 1) {
-    out["fitted"] = biasajdBCBD(out["fitted"], lambda, out["sigma2"]);
+  if (YeoJohnsonFlg == 1) {
+    out["fitted"] = biasajdYeoJohnson(out["fitted"], lambda, out["sigma2"]);
   }
   
   return out;
@@ -587,7 +640,7 @@ Rcpp::List loglik(const arma::colvec& Y, const arma::colvec& order, const int& i
 
 
 Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean, 
-                        const int& BCBDFlg, const double& lambda, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
+                        const int& YeoJohnsonFlg, const double& lambda, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
                         const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q) {
   
   Rcpp::List out;
@@ -627,10 +680,10 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
         errFlg = 0;
         
         r = r + 1;
-        tmpOrder = {i * 1.0, j * 1.0, k * 1.0, include_mean * 1.0, BCBDFlg * 1.0};
+        tmpOrder = {i * 1.0, j * 1.0, k * 1.0, include_mean * 1.0, YeoJohnsonFlg * 1.0};
         
         nobs = n - j;
-        npars = i + k + 1 + BCBDFlg;
+        npars = i + k + 1 + YeoJohnsonFlg;
         
         if (j == 0) {
           npars = npars + include_mean;
@@ -639,7 +692,7 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
         if (nobs > npars) {
           try{
             
-            tmp = loglik(Y, tmpOrder.subvec(0, 2), include_mean, BCBDFlg, lambda, BetaFlg, W, Beta);
+            tmp = loglik(Y, tmpOrder.subvec(0, 2), include_mean, YeoJohnsonFlg, lambda, BetaFlg, W, Beta);
             
           } catch(...) {
             
@@ -688,7 +741,7 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
           }
           
         } //else {
-          //Rcpp::warning("Sample size is not enough");
+        //Rcpp::warning("Sample size is not enough");
         //}
         
       }
@@ -697,13 +750,13 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
   
   out = Rcpp::List::create(Rcpp::Named("order") = minOrder, 
                            Rcpp::Named("coef") = minModel["coef"],
-                           Rcpp::Named("sigma2") = minModel["sigma2"],
-                           Rcpp::Named("lambda") = lambda,
-                           Rcpp::Named("crit") = crit,
-                           Rcpp::Named("critVal") = mincrit,
-                           Rcpp::Named("loglik") = minModel["loglik"],
-                           Rcpp::Named("fitted") = minModel["fitted"],
-                           Rcpp::Named("model") = minModel);
+                                                         Rcpp::Named("sigma2") = minModel["sigma2"],
+                                                                                         Rcpp::Named("lambda") = lambda,
+                                                                                         Rcpp::Named("crit") = crit,
+                                                                                         Rcpp::Named("critVal") = mincrit,
+                                                                                         Rcpp::Named("loglik") = minModel["loglik"],
+                                                                                                                         Rcpp::Named("fitted") = minModel["fitted"],
+                                                                                                                                                         Rcpp::Named("model") = minModel);
   
   return out;
   
@@ -812,12 +865,12 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   
   //// with mean
   try {
-    Rcpp::List modelNoBCBDWithMean = loglikFoward(Y, 1, 0, 0, BetaFlg, W, Beta, 
-                                                    crit, max_p, 0, max_q);
+    Rcpp::List modelNoYeoJohnsonWithMean = loglikFoward(Y, 1, 0, 0, BetaFlg, W, Beta, 
+                                                  crit, max_p, 0, max_q);
     
-    if( modelNoBCBDWithMean.containsElementNamed("critVal") ){
-      minCrit = modelNoBCBDWithMean["critVal"];
-      minModel = modelNoBCBDWithMean;
+    if( modelNoYeoJohnsonWithMean.containsElementNamed("critVal") ){
+      minCrit = modelNoYeoJohnsonWithMean["critVal"];
+      minModel = modelNoYeoJohnsonWithMean;
     } 
     //int errCode1 = 0;
     //Rcpp::Rcout << "minCrit:" << minCrit << "\n";
@@ -826,17 +879,17 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   }
   
   try{
-    Rcpp::List modelBCBDWithMean = OptLambdaCritBisec(Y, lowerLambda, upperLambda, breakPoint,
-                                                        1, BetaFlg, W, Beta, 
-                                                        crit, max_p, 0, max_q, tol, 
-                                                        maxIter);
+    Rcpp::List modelYeoJohnsonWithMean = OptLambdaCritBisec(Y, lowerLambda, upperLambda, breakPoint,
+                                                      1, BetaFlg, W, Beta, 
+                                                      crit, max_p, 0, max_q, tol, 
+                                                      maxIter);
     
-    if( modelBCBDWithMean.containsElementNamed("critVal") ){
-      tmpCrit = modelBCBDWithMean["critVal"];
+    if( modelYeoJohnsonWithMean.containsElementNamed("critVal") ){
+      tmpCrit = modelYeoJohnsonWithMean["critVal"];
       //Rcpp::Rcout << "tmpCrit:" << tmpCrit << "\n";
       if (tmpCrit <= minCrit) {
         minCrit = tmpCrit;
-        minModel = modelBCBDWithMean;
+        minModel = modelYeoJohnsonWithMean;
       }
     }
     //int errCode2 = 0;
@@ -848,15 +901,15 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   
   //// without mean
   try{
-    Rcpp::List modelNoBCBDNoMean = loglikFoward(Y, 0, 0, 0, BetaFlg, W, Beta, 
-                                                  crit, max_p, max_d, max_q);
+    Rcpp::List modelNoYeoJohnsonNoMean = loglikFoward(Y, 0, 0, 0, BetaFlg, W, Beta, 
+                                                crit, max_p, max_d, max_q);
     
-    if( modelNoBCBDNoMean.containsElementNamed("critVal") ){
-      tmpCrit = modelNoBCBDNoMean["critVal"];
+    if( modelNoYeoJohnsonNoMean.containsElementNamed("critVal") ){
+      tmpCrit = modelNoYeoJohnsonNoMean["critVal"];
       //Rcpp::Rcout << "tmpCrit:" << tmpCrit << "\n";
       if (tmpCrit <= minCrit) {
         minCrit = tmpCrit;
-        minModel = modelNoBCBDNoMean;
+        minModel = modelNoYeoJohnsonNoMean;
       }
     }
     //int errCode3 = 0;
@@ -865,17 +918,17 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   }
   
   try{
-    Rcpp::List modelBCBDNoMean = OptLambdaCritBisec(Y, lowerLambda, upperLambda, breakPoint,
-                                                      0, BetaFlg, W, Beta, 
-                                                      crit, max_p, max_d, max_q, tol, 
-                                                      maxIter);
+    Rcpp::List modelYeoJohnsonNoMean = OptLambdaCritBisec(Y, lowerLambda, upperLambda, breakPoint,
+                                                    0, BetaFlg, W, Beta, 
+                                                    crit, max_p, max_d, max_q, tol, 
+                                                    maxIter);
     
-    if( modelBCBDNoMean.containsElementNamed("critVal") ){
-      tmpCrit = modelBCBDNoMean["critVal"];
+    if( modelYeoJohnsonNoMean.containsElementNamed("critVal") ){
+      tmpCrit = modelYeoJohnsonNoMean["critVal"];
       //Rcpp::Rcout << "tmpCrit:" << tmpCrit << "\n";
       if (tmpCrit <= minCrit) {
         minCrit = tmpCrit;
-        minModel = modelBCBDNoMean;
+        minModel = modelYeoJohnsonNoMean;
       }
     }
     //int errCode4 = 0;
@@ -987,15 +1040,15 @@ Rcpp::List loglikRatioMax(const arma::colvec& Y, const int& minSize,
   }
   
   out = Rcpp::List::create(Rcpp::Named("llr") = maxLlr, 
-                          Rcpp::Named("t") = maxT,
-                          Rcpp::Named("llrVec") = llrVec,
-                          Rcpp::Named("order") = model0["order"], 
-                          Rcpp::Named("coef") = model0["coef"],
-                          Rcpp::Named("sigma2") = model0["sigma2"],
-                          Rcpp::Named("lambda") = model0["lambda"],
-                          Rcpp::Named("crit") = model0["crit"],
-                          Rcpp::Named("critVal") = model0["critVal"],
-                          Rcpp::Named("loglik") = model0["loglik"]);
+                           Rcpp::Named("t") = maxT,
+                           Rcpp::Named("llrVec") = llrVec,
+                           Rcpp::Named("order") = model0["order"], 
+                                                        Rcpp::Named("coef") = model0["coef"],
+                                                                                    Rcpp::Named("sigma2") = model0["sigma2"],
+                                                                                                                  Rcpp::Named("lambda") = model0["lambda"],
+                                                                                                                                                Rcpp::Named("crit") = model0["crit"],
+                                                                                                                                                                            Rcpp::Named("critVal") = model0["critVal"],
+                                                                                                                                                                                                           Rcpp::Named("loglik") = model0["loglik"]);
   
   return out;
   
@@ -1084,7 +1137,7 @@ Rcpp::List distPars(const int& n, const Rcpp::List& model0, const double& lowerL
   OMat = OmegaMat(n, order0, phi, theta);
   
   for (i = 0; i < nsim; i++) {
-
+    
     errCode = 1;
     iter = 0;
     
@@ -1105,7 +1158,7 @@ Rcpp::List distPars(const int& n, const Rcpp::List& model0, const double& lowerL
         X = simARIMA(mu, sigma2, innovDist, OMat, BetaFlg, W, Beta);
         
         if (order(4) > 0) {
-          Y = invBCBD(X, lambda);
+          Y = invYeoJohnson(X, lambda);
         } else {
           Y = X;
         }
@@ -1384,7 +1437,7 @@ arma::colvec distLoglikRatio(const int& n, const int& t, const Rcpp::List& distP
           X = simARIMA(mu, sigma2, innovDist, OMat, BetaFlg, W, Beta);
           
           if (orderMat(i, 4) > 0) {
-            Y = invBCBD(X, lambda);
+            Y = invYeoJohnson(X, lambda);
           } else {
             Y = X;
           }
@@ -1405,68 +1458,68 @@ arma::colvec distLoglikRatio(const int& n, const int& t, const Rcpp::List& distP
             tmploglik0(0) = loglik0;
             
             if (tmploglik0.has_inf() == 0) {
-            
-            //Rcpp::Rcout << "orderSim0:" << orderSim0  << "\n";
-            //Rcpp::Rcout << "coefSim0:" << coefSim0  << "\n";
-            //Rcpp::Rcout << "loglik0:" << loglik0  << "\n";
-            //Rcpp::Rcout << "is_infinite():" << tmploglik0.has_inf()  << "\n";
-            
-                int idx = 0;
+              
+              //Rcpp::Rcout << "orderSim0:" << orderSim0  << "\n";
+              //Rcpp::Rcout << "coefSim0:" << coefSim0  << "\n";
+              //Rcpp::Rcout << "loglik0:" << loglik0  << "\n";
+              //Rcpp::Rcout << "is_infinite():" << tmploglik0.has_inf()  << "\n";
+              
+              int idx = 0;
+              
+              if (orderSim0(0) > 0) {
+                tmpPhi.zeros(orderSim0(0));
+                ii = 0;
+                for (jj = idx; jj <= idx + orderSim0(0) - 1; jj++) {
+                  tmpPhi(ii) = coefSim0(jj);
+                  ii = ii + 1;
+                }
+                idx = idx + orderSim0(0);
                 
-                if (orderSim0(0) > 0) {
-                  tmpPhi.zeros(orderSim0(0));
-                  ii = 0;
-                  for (jj = idx; jj <= idx + orderSim0(0) - 1; jj++) {
-                    tmpPhi(ii) = coefSim0(jj);
-                    ii = ii + 1;
-                  }
-                  idx = idx + orderSim0(0);
-                  
-                  checkInv1 = InvertQ(tmpPhi);
-                } 
+                checkInv1 = InvertQ(tmpPhi);
+              } 
+              
+              if (orderSim0(2) > 0) {
+                tmpTheta.zeros(orderSim0(2));
+                ii = 0;
+                for (jj = idx; jj <= idx + orderSim0(2) - 1; jj++) {
+                  tmpTheta(ii) = coefSim0(jj);
+                  ii = ii + 1;
+                }
+                idx = idx + orderSim0(2);
+                checkInv2 = InvertQ(tmpTheta);
+              }
+              
+              
+              if (checkInv1 == 1 && checkInv2 == 1) {
                 
-                if (orderSim0(2) > 0) {
-                  tmpTheta.zeros(orderSim0(2));
-                  ii = 0;
-                  for (jj = idx; jj <= idx + orderSim0(2) - 1; jj++) {
-                    tmpTheta(ii) = coefSim0(jj);
-                    ii = ii + 1;
-                  }
-                  idx = idx + orderSim0(2);
-                  checkInv2 = InvertQ(tmpTheta);
+                Y1 = Y.subvec(0, t);
+                Y2 = Y.subvec(t + 1, n - 1);
+                
+                //Rcpp::Rcout << "Y1:" << Y1 << "\n";
+                //Rcpp::Rcout << "Y2:" << Y2 << "\n";
+                
+                if (BetaFlg == 1) {
+                  W1 = W.submat(0, 0, t, kk - 1);
+                  W2 = W.submat(t + 1, 0, n - 1, kk - 1);
+                  //Rcpp::Rcout << "W1:" << W1  << "\n";
+                  //Rcpp::Rcout << "W2:" << W2  << "\n";
                 }
                 
+                tmpllr = loglikRatio(Y1, Y2, loglik0, lowerLambda, upperLambda, breakPoint,
+                                     BetaFlg, W1, W2, Beta, crit, max_p, max_d, max_q, tol, maxIter);
                 
-                if (checkInv1 == 1 && checkInv2 == 1) {
+                //Rcpp::Rcout << "tmpllr:" << tmpllr << "\n";
                 
-                  Y1 = Y.subvec(0, t);
-                  Y2 = Y.subvec(t + 1, n - 1);
-                  
-                  //Rcpp::Rcout << "Y1:" << Y1 << "\n";
-                  //Rcpp::Rcout << "Y2:" << Y2 << "\n";
-                  
-                  if (BetaFlg == 1) {
-                    W1 = W.submat(0, 0, t, kk - 1);
-                    W2 = W.submat(t + 1, 0, n - 1, kk - 1);
-                    //Rcpp::Rcout << "W1:" << W1  << "\n";
-                    //Rcpp::Rcout << "W2:" << W2  << "\n";
-                  }
-                  
-                  tmpllr = loglikRatio(Y1, Y2, loglik0, lowerLambda, upperLambda, breakPoint,
-                                    BetaFlg, W1, W2, Beta, crit, max_p, max_d, max_q, tol, maxIter);
-                  
-                  //Rcpp::Rcout << "tmpllr:" << tmpllr << "\n";
-                  
-                  if (tmpllr.has_nan() == 0) {
-                    out(r) = tmpllr(0);
-                    errCode = 0;
-                  } else {
-                    errCode = 1;
-                  }
+                if (tmpllr.has_nan() == 0) {
+                  out(r) = tmpllr(0);
+                  errCode = 0;
                 } else {
                   errCode = 1;
                 }
-                
+              } else {
+                errCode = 1;
+              }
+              
             } else {
               errCode = 1;
             }
@@ -1628,7 +1681,7 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
     level = level + 1;
     
     if (level <= maxLev) {
-    
+      
       checkGroupVec = GroupVec[AvailCheckVec == 1];
       checkGroupCntVec = Rcpp::table(checkGroupVec);
       checkGroupVec = Rcpp::sort_unique(checkGroupVec);
@@ -1683,7 +1736,7 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
           t = Rcpp::as<int>(step1["t"]);
           maxllr = step1["llr"];
           llrVec = step1["llrVec"];
-
+          
           
           
           
@@ -1753,7 +1806,7 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
             }
             
           }
-
+          
           Rcpp::Rcout << "AvailCheckVec:" << AvailCheckVec << "\n";
           Rcpp::Rcout << "GroupVec:" << GroupVec << "\n";
           
@@ -1765,7 +1818,7 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
         flg = 1;
         
       }
-    
+      
     } else {
       flg = 1;
     }
@@ -1924,11 +1977,11 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
 //      Y02 = simARIMA(mu02, sigma202, innovDist, OmegaMat02, 0, W, Beta);
 //      
 //      if (order01(4) > 0) {
-//        Y01 = invBCBD(Y01, lambda01);
+//        Y01 = invYeoJohnson(Y01, lambda01);
 //      }
 //      
 //      if (order02(4) > 0) {
-//        Y02 = invBCBD(Y02, lambda02);
+//        Y02 = invYeoJohnson(Y02, lambda02);
 //      }
 //      
 //      for (j = 0; j < n; j++) {
@@ -1944,7 +1997,7 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
 //      Y0 = simARIMA(mu01, sigma201, innovDist, OmegaMat01, 0, W, Beta);
 //                    
 //      if (order01(4) > 0) {
-//        Y0 = invBCBD(Y0, lambda01);
+//        Y0 = invYeoJohnson(Y0, lambda01);
 //      }
 //    }
 //    
