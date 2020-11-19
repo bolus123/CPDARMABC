@@ -9,12 +9,12 @@ simARIMA <- function(mu, sigma2, innovDist, OmegaMat, BetaFlg, W, Beta) {
     .Call(`_CPDARMABC_simARIMA`, mu, sigma2, innovDist, OmegaMat, BetaFlg, W, Beta)
 }
 
-BCBD <- function(Y, lambda) {
-    .Call(`_CPDARMABC_BCBD`, Y, lambda)
+YeoJohnson <- function(Y, lambda) {
+    .Call(`_CPDARMABC_YeoJohnson`, Y, lambda)
 }
 
-invBCBD <- function(X, lambda) {
-    .Call(`_CPDARMABC_invBCBD`, X, lambda)
+invYeoJohnson <- function(X, lambda) {
+    .Call(`_CPDARMABC_invYeoJohnson`, X, lambda)
 }
 
 distPars <- function(n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr) {

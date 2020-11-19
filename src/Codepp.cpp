@@ -425,7 +425,7 @@ arma::colvec YeoJohnson1stDeriv(const arma::colvec& Y, const double& lambda) {
 }
 
 
-arma::colvec invYeoJohnson2stDeriv(const arma::colvec& X, const double& lambda) {
+arma::colvec invYeoJohnson2ndDeriv(const arma::colvec& X, const double& lambda) {
   
   int n = X.n_elem;
   
@@ -462,101 +462,14 @@ arma::colvec invYeoJohnson2stDeriv(const arma::colvec& X, const double& lambda) 
   
 }
 
+
 arma::colvec biasadjYeoJohnson(const arma::colvec& pred, const double& lambda, const double& sigma2) {
-  arma::colvec out = invYeoJohnson(pred, lambda) + invYeoJohnson2stDeriv(pred, lambda) / 2 * sigma2;
+  arma::colvec out = invYeoJohnson(pred, lambda) + invYeoJohnson2ndDeriv(pred, lambda) / 2 * sigma2;
   return out;
 }
 
 /////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////
-
-//// [[Rcpp::export]]
-//Rcpp::List fastLm(const arma::mat& X, const arma::colvec& y) {
-//  int n = X.n_rows, k = X.n_cols;
-//  
-//  arma::colvec coef = arma::solve(X, y);    // fit model y ~ X
-//  arma::colvec res  = y - X*coef;           // residuals
-//  
-//  // std.errors of coefficients
-//  double s2 = std::inner_product(res.begin(), res.end(), res.begin(), 0.0)/(n - k);
-//  
-//  arma::colvec std_err = arma::sqrt(s2 * arma::diagvec(arma::pinv(arma::trans(X)*X)));  
-//  
-//  return Rcpp::List::create(Rcpp::Named("coefficients") = coef,
-//                            Rcpp::Named("stderr")       = std_err,
-//                            Rcpp::Named("df.residual")  = n - k);
-//}
-
-//// [[Rcpp::export]]
-//Rcpp::List estCSS(const arma::colvec& X, const arma::colvec& order, const int& muFlg) {
-//  
-//  int n = X.n_elem;
-//  arma::colvec tmpX = X;
-//  arma::colvec tmpX1;
-//  arma::mat tmpA;
-//  arma::mat tmpA1(n - order(1), order(0));
-//  arma::mat tmpB;
-//  arma::mat tmpB1(n - order(0) - order(1), order(0));
-//  arma::colvec phi;
-//  arma::colvec theta;
-//  arma::colvec tmpEps;
-//  double mu = 0;
-//  arma::colvec sigma2;
-//  
-//  tmpEps = tmpX;
-//  
-//  if (muFlg == 1) {
-//   mu = arma::mean(tmpX);
-//   tmpX = tmpX - mu;
-//   tmpEps = tmpX;
-// }
-//  
-//  if (order(1) > 0) {
-//    tmpX = DifMat(n, order) * tmpX;
-//    tmpEps = tmpX;
-//  } 
-//  
-//  if (order(0) > 0) {
-//    for (int j = 0; j < order(0); j++) {
-//      for (int i = 0; i < n - order(1); i++) {
-//        if (i - order(0) >= 0) {
-//          tmpA1(i, j) = tmpX(i - j - 1);
-//        }
-//      }
-//    }
-//    
-//    tmpA = tmpA1.submat(order(0), 0, n - order(1) - 1, order(0) - 1);
-//    tmpX1 = tmpX.subvec(order(0), n - order(1) - 1);
-//    phi = arma::solve(tmpA, tmpX1);
-//    tmpX = tmpX1 - tmpA * phi;
-//    tmpEps = tmpX;
-//  }
-//  
-//  if (order(2) > 0) {
-//    for (int j = 0; j < order(2); j++) {
-//      for (int i = 0; i < n - order(1) - order(0); i++) {
-//        if (i - order(2) >= 0) {
-//          tmpB1(i, j) = tmpX(i - j - 1);
-//        }
-//      }
-//    }
-//    
-//    tmpB = tmpB1.submat(order(2), 0, n - order(1) - order(0) - 1, order(2) - 1);
-//    tmpX1 = tmpX.subvec(order(2), n - order(1) - order(0) - 1);
-//    theta = arma::solve(tmpB, tmpX1);
-//    tmpEps = tmpX1 - tmpB * theta;
-//  }
-//  
-//  //sigma2 = arma::mean(arma::pow(tmpEps, 2));
-//  sigma2 = arma::sum(arma::pow(tmpEps, 2)) / tmpEps.n_elem;
-//  
-//  return Rcpp::List::create(Rcpp::Named("phi") = phi, 
-//                            Rcpp::Named("theta") = theta,
-//                            Rcpp::Named("mu") = mu, 
-//                            Rcpp::Named("sigma2") = sigma2, 
-//                            Rcpp::Named("eps") = tmpEps);
-//  
-//}
 
 
 Rcpp::List ArimaCpp(const arma::colvec& x, const arma::colvec& order, const int& include_mean) {
@@ -629,7 +542,7 @@ Rcpp::List loglik(const arma::colvec& Y, const arma::colvec& order, const int& i
   out["aicc"] = AICc(loglik, npars, out["nobs"]);
   
   if (YeoJohnsonFlg == 1) {
-    out["fitted"] = biasajdYeoJohnson(out["fitted"], lambda, out["sigma2"]);
+    out["fitted"] = biasadjYeoJohnson(out["fitted"], lambda, out["sigma2"]);
   }
   
   return out;
@@ -847,7 +760,6 @@ Rcpp::List OptLambdaCritBisec(const arma::colvec& Y, const double& lowerLambda, 
   return model2;
   
 }
-
 
 Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const double& upperLambda, const int& breakPoint,
                     const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 

@@ -37,27 +37,27 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// BCBD
-arma::colvec BCBD(const arma::colvec& Y, const double& lambda);
-RcppExport SEXP _CPDARMABC_BCBD(SEXP YSEXP, SEXP lambdaSEXP) {
+// YeoJohnson
+arma::colvec YeoJohnson(const arma::colvec& Y, const double& lambda);
+RcppExport SEXP _CPDARMABC_YeoJohnson(SEXP YSEXP, SEXP lambdaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::colvec& >::type Y(YSEXP);
     Rcpp::traits::input_parameter< const double& >::type lambda(lambdaSEXP);
-    rcpp_result_gen = Rcpp::wrap(BCBD(Y, lambda));
+    rcpp_result_gen = Rcpp::wrap(YeoJohnson(Y, lambda));
     return rcpp_result_gen;
 END_RCPP
 }
-// invBCBD
-arma::colvec invBCBD(const arma::colvec& X, const double& lambda);
-RcppExport SEXP _CPDARMABC_invBCBD(SEXP XSEXP, SEXP lambdaSEXP) {
+// invYeoJohnson
+arma::colvec invYeoJohnson(const arma::colvec& X, const double& lambda);
+RcppExport SEXP _CPDARMABC_invYeoJohnson(SEXP XSEXP, SEXP lambdaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::colvec& >::type X(XSEXP);
     Rcpp::traits::input_parameter< const double& >::type lambda(lambdaSEXP);
-    rcpp_result_gen = Rcpp::wrap(invBCBD(X, lambda));
+    rcpp_result_gen = Rcpp::wrap(invYeoJohnson(X, lambda));
     return rcpp_result_gen;
 END_RCPP
 }
