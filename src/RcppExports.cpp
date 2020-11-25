@@ -61,6 +61,74 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// loglikFoward
+Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean, const int& YeoJohnsonFlg, const double& lambda, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q);
+RcppExport SEXP _CPDARMABC_loglikFoward(SEXP YSEXP, SEXP include_meanSEXP, SEXP YeoJohnsonFlgSEXP, SEXP lambdaSEXP, SEXP BetaFlgSEXP, SEXP WSEXP, SEXP BetaSEXP, SEXP critSEXP, SEXP max_pSEXP, SEXP max_dSEXP, SEXP max_qSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::colvec& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const int& >::type include_mean(include_meanSEXP);
+    Rcpp::traits::input_parameter< const int& >::type YeoJohnsonFlg(YeoJohnsonFlgSEXP);
+    Rcpp::traits::input_parameter< const double& >::type lambda(lambdaSEXP);
+    Rcpp::traits::input_parameter< const int& >::type BetaFlg(BetaFlgSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type W(WSEXP);
+    Rcpp::traits::input_parameter< const arma::colvec& >::type Beta(BetaSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::String& >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_p(max_pSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_d(max_dSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_q(max_qSEXP);
+    rcpp_result_gen = Rcpp::wrap(loglikFoward(Y, include_mean, YeoJohnsonFlg, lambda, BetaFlg, W, Beta, crit, max_p, max_d, max_q));
+    return rcpp_result_gen;
+END_RCPP
+}
+// OptLambdaCritBisec
+Rcpp::List OptLambdaCritBisec(const arma::colvec& Y, const double& lowerLambda, const double& upperLambda, const int& breakPoint, const int& include_mean, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, const int& maxIter);
+RcppExport SEXP _CPDARMABC_OptLambdaCritBisec(SEXP YSEXP, SEXP lowerLambdaSEXP, SEXP upperLambdaSEXP, SEXP breakPointSEXP, SEXP include_meanSEXP, SEXP BetaFlgSEXP, SEXP WSEXP, SEXP BetaSEXP, SEXP critSEXP, SEXP max_pSEXP, SEXP max_dSEXP, SEXP max_qSEXP, SEXP tolSEXP, SEXP maxIterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::colvec& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const double& >::type lowerLambda(lowerLambdaSEXP);
+    Rcpp::traits::input_parameter< const double& >::type upperLambda(upperLambdaSEXP);
+    Rcpp::traits::input_parameter< const int& >::type breakPoint(breakPointSEXP);
+    Rcpp::traits::input_parameter< const int& >::type include_mean(include_meanSEXP);
+    Rcpp::traits::input_parameter< const int& >::type BetaFlg(BetaFlgSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type W(WSEXP);
+    Rcpp::traits::input_parameter< const arma::colvec& >::type Beta(BetaSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::String& >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_p(max_pSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_d(max_dSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_q(max_qSEXP);
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxIter(maxIterSEXP);
+    rcpp_result_gen = Rcpp::wrap(OptLambdaCritBisec(Y, lowerLambda, upperLambda, breakPoint, include_mean, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// optModel
+Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const double& upperLambda, const int& breakPoint, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, const int& maxIter);
+RcppExport SEXP _CPDARMABC_optModel(SEXP YSEXP, SEXP lowerLambdaSEXP, SEXP upperLambdaSEXP, SEXP breakPointSEXP, SEXP BetaFlgSEXP, SEXP WSEXP, SEXP BetaSEXP, SEXP critSEXP, SEXP max_pSEXP, SEXP max_dSEXP, SEXP max_qSEXP, SEXP tolSEXP, SEXP maxIterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::colvec& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const double& >::type lowerLambda(lowerLambdaSEXP);
+    Rcpp::traits::input_parameter< const double& >::type upperLambda(upperLambdaSEXP);
+    Rcpp::traits::input_parameter< const int& >::type breakPoint(breakPointSEXP);
+    Rcpp::traits::input_parameter< const int& >::type BetaFlg(BetaFlgSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type W(WSEXP);
+    Rcpp::traits::input_parameter< const arma::colvec& >::type Beta(BetaSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::String& >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_p(max_pSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_d(max_dSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_q(max_qSEXP);
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxIter(maxIterSEXP);
+    rcpp_result_gen = Rcpp::wrap(optModel(Y, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter));
+    return rcpp_result_gen;
+END_RCPP
+}
 // distPars
 Rcpp::List distPars(const int& n, const Rcpp::List& model0, const double& lowerLambda, const double& upperLambda, const int& breakPoint, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, const int& maxIter, const Rcpp::String& innovDist, const int& nsim, const int& maxErr);
 RcppExport SEXP _CPDARMABC_distPars(SEXP nSEXP, SEXP model0SEXP, SEXP lowerLambdaSEXP, SEXP upperLambdaSEXP, SEXP breakPointSEXP, SEXP BetaFlgSEXP, SEXP WSEXP, SEXP BetaSEXP, SEXP critSEXP, SEXP max_pSEXP, SEXP max_dSEXP, SEXP max_qSEXP, SEXP tolSEXP, SEXP maxIterSEXP, SEXP innovDistSEXP, SEXP nsimSEXP, SEXP maxErrSEXP) {
@@ -145,6 +213,39 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type maxErr(maxErrSEXP);
     Rcpp::traits::input_parameter< const int& >::type minNonNAN(minNonNANSEXP);
     rcpp_result_gen = Rcpp::wrap(binSeg(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN));
+    return rcpp_result_gen;
+END_RCPP
+}
+// SldWin
+Rcpp::List SldWin(const arma::colvec& Y, const double& alpha, const int& GLRSApprox, const int& windowLength, const int& maxCP, const double& lowerLambda, const double& upperLambda, const int& breakPoint, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, const int& maxIter, const double& maxLev, const Rcpp::String& innovDist, const int& nsim1, const int& nsim2, const int& maxErr, const int& minNonNAN);
+RcppExport SEXP _CPDARMABC_SldWin(SEXP YSEXP, SEXP alphaSEXP, SEXP GLRSApproxSEXP, SEXP windowLengthSEXP, SEXP maxCPSEXP, SEXP lowerLambdaSEXP, SEXP upperLambdaSEXP, SEXP breakPointSEXP, SEXP BetaFlgSEXP, SEXP WSEXP, SEXP BetaSEXP, SEXP critSEXP, SEXP max_pSEXP, SEXP max_dSEXP, SEXP max_qSEXP, SEXP tolSEXP, SEXP maxIterSEXP, SEXP maxLevSEXP, SEXP innovDistSEXP, SEXP nsim1SEXP, SEXP nsim2SEXP, SEXP maxErrSEXP, SEXP minNonNANSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::colvec& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const double& >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< const int& >::type GLRSApprox(GLRSApproxSEXP);
+    Rcpp::traits::input_parameter< const int& >::type windowLength(windowLengthSEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxCP(maxCPSEXP);
+    Rcpp::traits::input_parameter< const double& >::type lowerLambda(lowerLambdaSEXP);
+    Rcpp::traits::input_parameter< const double& >::type upperLambda(upperLambdaSEXP);
+    Rcpp::traits::input_parameter< const int& >::type breakPoint(breakPointSEXP);
+    Rcpp::traits::input_parameter< const int& >::type BetaFlg(BetaFlgSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type W(WSEXP);
+    Rcpp::traits::input_parameter< const arma::colvec& >::type Beta(BetaSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::String& >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_p(max_pSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_d(max_dSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_q(max_qSEXP);
+    Rcpp::traits::input_parameter< const double& >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxIter(maxIterSEXP);
+    Rcpp::traits::input_parameter< const double& >::type maxLev(maxLevSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::String& >::type innovDist(innovDistSEXP);
+    Rcpp::traits::input_parameter< const int& >::type nsim1(nsim1SEXP);
+    Rcpp::traits::input_parameter< const int& >::type nsim2(nsim2SEXP);
+    Rcpp::traits::input_parameter< const int& >::type maxErr(maxErrSEXP);
+    Rcpp::traits::input_parameter< const int& >::type minNonNAN(minNonNANSEXP);
+    rcpp_result_gen = Rcpp::wrap(SldWin(Y, alpha, GLRSApprox, windowLength, maxCP, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN));
     return rcpp_result_gen;
 END_RCPP
 }

@@ -17,6 +17,18 @@ invYeoJohnson <- function(X, lambda) {
     .Call(`_CPDARMABC_invYeoJohnson`, X, lambda)
 }
 
+loglikFoward <- function(Y, include_mean, YeoJohnsonFlg, lambda, BetaFlg, W, Beta, crit, max_p, max_d, max_q) {
+    .Call(`_CPDARMABC_loglikFoward`, Y, include_mean, YeoJohnsonFlg, lambda, BetaFlg, W, Beta, crit, max_p, max_d, max_q)
+}
+
+OptLambdaCritBisec <- function(Y, lowerLambda, upperLambda, breakPoint, include_mean, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter) {
+    .Call(`_CPDARMABC_OptLambdaCritBisec`, Y, lowerLambda, upperLambda, breakPoint, include_mean, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter)
+}
+
+optModel <- function(Y, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter) {
+    .Call(`_CPDARMABC_optModel`, Y, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter)
+}
+
 distPars <- function(n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr) {
     .Call(`_CPDARMABC_distPars`, n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr)
 }
@@ -27,5 +39,9 @@ distLoglikRatio <- function(n, t, distPars0, lowerLambda, upperLambda, breakPoin
 
 binSeg <- function(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN) {
     .Call(`_CPDARMABC_binSeg`, Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN)
+}
+
+SldWin <- function(Y, alpha, GLRSApprox, windowLength, maxCP, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN) {
+    .Call(`_CPDARMABC_SldWin`, Y, alpha, GLRSApprox, windowLength, maxCP, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN)
 }
 

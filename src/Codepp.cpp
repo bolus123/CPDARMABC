@@ -321,27 +321,27 @@ arma::colvec YeoJohnson(const arma::colvec& Y, const double& lambda) {
   int i = 0;
   
   for (i = 0; i < n; i++) {
-  
-	tmp = Y(i);
-	
-	if (tmp >= 0) {
-		
-		if (lambda != 0) {
-			out(i) = (std::pow(tmp + 1, lambda) - 1) / lambda;
-		} else {
-			out(i) = std::log(tmp + 1);
-		}
-		
-	} else if (tmp < 0) {
-		
-		if (lambda != 2) {
-			out(i) = (-1) * (std::pow((-1) * tmp + 1, 2 - lambda) - 1) / (2 - lambda);
-		} else {
-			out(i) = (-1) * std::log((-1) * tmp + 1);
-		}
-		
-	}
-  
+    
+    tmp = Y(i);
+    
+    if (tmp >= 0) {
+      
+      if (lambda != 0) {
+        out(i) = (std::pow(tmp + 1, lambda) - 1) / lambda;
+      } else {
+        out(i) = std::log(tmp + 1);
+      }
+      
+    } else if (tmp < 0) {
+      
+      if (lambda != 2) {
+        out(i) = (-1) * (std::pow((-1) * tmp + 1, 2 - lambda) - 1) / (2 - lambda);
+      } else {
+        out(i) = (-1) * std::log((-1) * tmp + 1);
+      }
+      
+    }
+    
   }
   
   return out;
@@ -360,27 +360,27 @@ arma::colvec invYeoJohnson(const arma::colvec& X, const double& lambda) {
   int i = 0;
   
   for (i = 0; i < n; i++) {
-  
-	tmp = X(i);
-	
-	if (tmp >= 0) {
-		
-		if (lambda != 0) {
-			out(i) = std::pow(lambda * tmp + 1, 1 / lambda) - 1;
-		} else {
-			out(i) = std::exp(tmp) - 1;
-		}
-		
-	} else if (tmp < 0) {
-		
-		if (lambda != 2) {
-			out(i) = (-1) * std::pow((-1) * (2 - lambda) * tmp + 1, 1 / (2 - lambda)) + 1;
-		} else {
-			out(i) = (-1) * std::exp((-1) * tmp) + 1;
-		}
-		
-	}
-  
+    
+    tmp = X(i);
+    
+    if (tmp >= 0) {
+      
+      if (lambda != 0) {
+        out(i) = std::pow(lambda * tmp + 1, 1 / lambda) - 1;
+      } else {
+        out(i) = std::exp(tmp) - 1;
+      }
+      
+    } else if (tmp < 0) {
+      
+      if (lambda != 2) {
+        out(i) = (-1) * std::pow((-1) * (2 - lambda) * tmp + 1, 1 / (2 - lambda)) + 1;
+      } else {
+        out(i) = (-1) * std::exp((-1) * tmp) + 1;
+      }
+      
+    }
+    
   }
   
   return out;
@@ -397,27 +397,27 @@ arma::colvec YeoJohnson1stDeriv(const arma::colvec& Y, const double& lambda) {
   int i = 0;
   
   for (i = 0; i < n; i++) {
-  
-	tmp = Y(i);
-	
-	if (tmp >= 0) {
-		
-		if (lambda != 0) {
-			out(i) = std::pow(tmp + 1, lambda - 1);
-		} else {
-			out(i) = 1 / (tmp + 1);
-		}
-		
-	} else if (tmp < 0) {
-		
-		if (lambda != 2) {
-			out(i) = std::pow((-1) * tmp + 1, 2 - lambda - 1);
-		} else {
-			out(i) = 1 / ((-1) * tmp + 1);
-		}
-		
-	}
-  
+    
+    tmp = Y(i);
+    
+    if (tmp >= 0) {
+      
+      if (lambda != 0) {
+        out(i) = std::pow(tmp + 1, lambda - 1);
+      } else {
+        out(i) = 1 / (tmp + 1);
+      }
+      
+    } else if (tmp < 0) {
+      
+      if (lambda != 2) {
+        out(i) = std::pow((-1) * tmp + 1, 2 - lambda - 1);
+      } else {
+        out(i) = 1 / ((-1) * tmp + 1);
+      }
+      
+    }
+    
   }
   
   return out;
@@ -435,27 +435,27 @@ arma::colvec invYeoJohnson2ndDeriv(const arma::colvec& X, const double& lambda) 
   int i = 0;
   
   for (i = 0; i < n; i++) {
-  
-	tmp = X(i);
-	
-	if (tmp >= 0) {
-		
-		if (lambda != 0) {
-			out(i) = (1 - lambda) * std::pow(lambda * tmp + 1, 1 / lambda - 2);
-		} else {
-			out(i) = std::exp(tmp);
-		}
-		
-	} else if (tmp < 0) {
-		
-		if (lambda != 2) {
-			out(i) = (1 - lambda) * std::pow((-1) * (2 - lambda) * tmp + 1, 1 / (2 - lambda) - 2);
-		} else {
-			out(i) = (-1) * std::exp((-1) * tmp);
-		}
-		
-	}
-  
+    
+    tmp = X(i);
+    
+    if (tmp >= 0) {
+      
+      if (lambda != 0) {
+        out(i) = (1 - lambda) * std::pow(lambda * tmp + 1, 1 / lambda - 2);
+      } else {
+        out(i) = std::exp(tmp);
+      }
+      
+    } else if (tmp < 0) {
+      
+      if (lambda != 2) {
+        out(i) = (1 - lambda) * std::pow((-1) * (2 - lambda) * tmp + 1, 1 / (2 - lambda) - 2);
+      } else {
+        out(i) = (-1) * std::exp((-1) * tmp);
+      }
+      
+    }
+    
   }
   
   return out;
@@ -551,7 +551,7 @@ Rcpp::List loglik(const arma::colvec& Y, const arma::colvec& order, const int& i
 
 
 
-
+// [[Rcpp::export]]
 Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean, 
                         const int& YeoJohnsonFlg, const double& lambda, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
                         const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q) {
@@ -568,11 +568,10 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
   int n = Y.n_elem;
   int nobs;
   int npars;
-  int i;
-  int j;
-  int k;
+  int i = 0;
+  int j = 0;
+  int k = 0;
   int r = 0;
-  int h = 0;
   int idx = 0;
   Rcpp::NumericVector tmpCoef1;
   arma::colvec tmpCoef;
@@ -586,6 +585,9 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
     for (j = 0; j < (max_d + 1); j++) {
       
       for (k = 0; k < (max_q + 1); k++) {
+        
+        //Rcpp::Rcout << "i:" << i << "\n";
+        //Rcpp::Rcout <<  "k:" << k <<  "\n";
         
         checkInv1 = 1;
         checkInv2 = 1;
@@ -620,15 +622,15 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
             
             if (i > 0 || k > 0) {
               tmpCoef1 = tmp["coef"];
+              //Rcpp::Rcout << "tmpCoef1:" << tmpCoef1 <<  "\n";
               
-              arma::colvec tmpCoef(i + k);
-              h = 0;
-              for (int ii = 0; ii < i; ii++) {
-                for (int kk = 0; kk < k; kk++) {
-                  tmpCoef(h) = tmpCoef1(h);
-                  h = h + 1;
-                }
+              arma::colvec tmpCoef(i + k + include_mean);
+              
+              for (int h = 0; h < i + k + include_mean; h++) {
+                tmpCoef(h) = tmpCoef1(h);
               }
+              
+              //Rcpp::Rcout << "tmpCoef:" << tmpCoef <<  "\n";
               
               idx = 0;
               
@@ -638,11 +640,16 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
                 checkInv1 = InvertQ(phi);
               }
               
+              //Rcpp::Rcout << "phi:" << phi <<  "\n";
+              
               if (k > 0) {
                 theta = tmpCoef.subvec(idx, idx + k - 1);
                 idx = idx + k;
                 checkInv2 = InvertQ(theta);
               }
+              
+              //Rcpp::Rcout << "theta:" << theta <<  "\n";
+              
             }
             
             if (checkInv1 == 1 && checkInv2 == 1 && tmpCrit < mincrit) {
@@ -654,8 +661,8 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
           }
           
         } //else {
-        //Rcpp::warning("Sample size is not enough");
-        //}
+        ////Rcpp::warning("Sample size is not enough");
+        ////}
         
       }
     }
@@ -675,7 +682,7 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
   
 }
 
-
+// [[Rcpp::export]]
 Rcpp::List OptLambdaCritBisec(const arma::colvec& Y, const double& lowerLambda, const double& upperLambda, const int& breakPoint,
                               const int& include_mean, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
                               const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, 
@@ -761,6 +768,7 @@ Rcpp::List OptLambdaCritBisec(const arma::colvec& Y, const double& lowerLambda, 
   
 }
 
+// [[Rcpp::export]]
 Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const double& upperLambda, const int& breakPoint,
                     const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
                     const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, 
@@ -770,6 +778,7 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   double minCrit = LONG_LONG_MAX;
   double tmpCrit;
   Rcpp::List minModel;
+  Rcpp::List modelNoYeoJohnsonWithMean;
   //int errCode1;
   //int errCode2;
   //int errCode3;
@@ -777,8 +786,9 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   
   //// with mean
   try {
-    Rcpp::List modelNoYeoJohnsonWithMean = loglikFoward(Y, 1, 0, 0, BetaFlg, W, Beta, 
-                                                  crit, max_p, 0, max_q);
+    modelNoYeoJohnsonWithMean = loglikFoward(Y, 1, 0, 0, BetaFlg, W, Beta, 
+                                             crit, max_p, 0, max_q);
+    
     
     if( modelNoYeoJohnsonWithMean.containsElementNamed("critVal") ){
       minCrit = modelNoYeoJohnsonWithMean["critVal"];
@@ -790,11 +800,12 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
     //int errCode1 = 1;
   }
   
+  
   try{
     Rcpp::List modelYeoJohnsonWithMean = OptLambdaCritBisec(Y, lowerLambda, upperLambda, breakPoint,
-                                                      1, BetaFlg, W, Beta, 
-                                                      crit, max_p, 0, max_q, tol, 
-                                                      maxIter);
+                                                            1, BetaFlg, W, Beta, 
+                                                            crit, max_p, 0, max_q, tol, 
+                                                            maxIter);
     
     if( modelYeoJohnsonWithMean.containsElementNamed("critVal") ){
       tmpCrit = modelYeoJohnsonWithMean["critVal"];
@@ -804,6 +815,7 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
         minModel = modelYeoJohnsonWithMean;
       }
     }
+    //Rcpp::Rcout << "minCrit:" << minCrit << "\n";
     //int errCode2 = 0;
   } catch(...) {
     //int errCode2 = 1;
@@ -814,7 +826,7 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   //// without mean
   try{
     Rcpp::List modelNoYeoJohnsonNoMean = loglikFoward(Y, 0, 0, 0, BetaFlg, W, Beta, 
-                                                crit, max_p, max_d, max_q);
+                                                      crit, max_p, max_d, max_q);
     
     if( modelNoYeoJohnsonNoMean.containsElementNamed("critVal") ){
       tmpCrit = modelNoYeoJohnsonNoMean["critVal"];
@@ -824,6 +836,7 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
         minModel = modelNoYeoJohnsonNoMean;
       }
     }
+    //Rcpp::Rcout << "minCrit:" << minCrit << "\n";
     //int errCode3 = 0;
   } catch(...) {
     //int errCode3 = 1;
@@ -831,9 +844,9 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   
   try{
     Rcpp::List modelYeoJohnsonNoMean = OptLambdaCritBisec(Y, lowerLambda, upperLambda, breakPoint,
-                                                    0, BetaFlg, W, Beta, 
-                                                    crit, max_p, max_d, max_q, tol, 
-                                                    maxIter);
+                                                          0, BetaFlg, W, Beta, 
+                                                          crit, max_p, max_d, max_q, tol, 
+                                                          maxIter);
     
     if( modelYeoJohnsonNoMean.containsElementNamed("critVal") ){
       tmpCrit = modelYeoJohnsonNoMean["critVal"];
@@ -843,13 +856,14 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
         minModel = modelYeoJohnsonNoMean;
       }
     }
+    //Rcpp::Rcout << "minCrit:" << minCrit << "\n";
     //int errCode4 = 0;
   } catch(...) {
     //int errCode4 = 1;
   }
   
   return minModel;
-  
+  //return modelNoYeoJohnsonWithMean;
 }
 
 
@@ -1740,6 +1754,227 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
   return out = Rcpp::List::create(Rcpp::Named("GroupVec") = GroupVec);
   
 }
+
+
+
+
+
+// [[Rcpp::export]]
+Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSApprox, const int& windowLength, const int& maxCP,
+                  const double& lowerLambda, const double& upperLambda, const int& breakPoint,
+                  const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
+                  const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, 
+                  const int& maxIter, const double& maxLev, const Rcpp::String& innovDist, 
+                  const int& nsim1, const int& nsim2, const int& maxErr, const int& minNonNAN) {
+  
+  Rcpp::List out;
+  
+  int n = Y.n_elem;
+  
+  int halfWin = std::floor(windowLength / 2);
+  
+  arma::colvec GLRVec(n);
+  GLRVec.fill(arma::datum::inf);
+  GLRVec = -GLRVec;
+  
+  arma::colvec Y0(2 * halfWin);
+  arma::colvec Y1(halfWin);
+  arma::colvec Y2(halfWin);
+  
+  Rcpp::List model0;
+  Rcpp::List model1;
+  Rcpp::List model2;
+  
+  Rcpp::List model0s(n - windowLength + 1);
+  
+  arma::mat W0;
+  arma::mat W1;
+  arma::mat W2;
+  
+  double loglik0;
+  
+  Rcpp::List step2;
+  Rcpp::NumericVector step3;
+  //Rcpp::NumericVector tmpstep3;
+  Rcpp::NumericVector step4;
+  Rcpp::LogicalVector checkStep3NAN;
+  double criticalVal;
+  
+  int k = W.n_cols - 1;
+  
+  int sta = 0;
+  int ed = 0;
+  int r = 0;
+  
+  //int ii = 0;
+  
+  for (int t = halfWin - 1; t < n - halfWin; t++) {
+    
+    //ii = ii + 1;
+    //Rcpp::Rcout << "ii:" << ii << "\n";
+    Rcpp::Rcout << "t:" << t + 1 << "\n";
+    
+    sta = t - (halfWin - 1);
+    ed = t + (halfWin);
+    
+    //Rcpp::Rcout << "sta:" << sta << "\n";
+    //Rcpp::Rcout << "ed:" << ed << "\n";
+    
+    Y0 = Y.subvec(sta, ed);
+    //Rcpp::Rcout << "Y0:" << Y0 << "\n";
+    Y1 = Y.subvec(sta, t);
+    //Rcpp::Rcout << "Y1:" << Y1 << "\n";
+    Y2 = Y.subvec(t + 1, ed);
+    //Rcpp::Rcout << "Y2:" << Y2 << "\n";
+    
+    if (BetaFlg == 1) {
+      W0 = W.submat(sta, 0, ed, k);
+      W1 = W.submat(sta, 0, t, k);
+      W2 = W.submat(t + 1, 0, ed, k);
+    }
+    
+    model0 = optModel(Y0, lowerLambda, upperLambda, breakPoint,
+                    BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter);
+    
+    model0s(r) = model0;
+    
+    loglik0 = model0["loglik"];
+    
+    GLRVec(t) = loglikRatio(Y1, Y2, loglik0, lowerLambda, upperLambda, breakPoint,
+           BetaFlg, W1, W2, Beta, crit, max_p, max_d, max_q, tol, maxIter);
+    
+    r = r + 1;
+    
+    
+    
+    //step2 = distPars(windowLength, model0, lowerLambda, upperLambda, breakPoint, 
+    //                 BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim1, maxErr);
+    //Rcpp::Rcout << "step2:" << step2["coefMat"] << "\n";
+    
+    ////Step3: simulate the distribution of GLRs
+    //step3 = distLoglikRatio(windowLength, halfWin - 1, step2, lowerLambda, upperLambda, breakPoint, 
+    //                        BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim2, maxErr);
+    //Rcpp::Rcout << "step3:" << step3 << "\n";
+    
+    
+    
+  }
+  
+//////////////////////////////////////////////////////////////////////////  
+  
+  
+  arma::uvec GLRVec_index = arma::sort_index(GLRVec);
+  
+  arma::colvec GLRVecDiff1 = arma::sign(arma::diff(GLRVec));
+  arma::colvec GLRVecDiff2 = arma::diff(GLRVecDiff1);
+  
+  arma::uvec Idx = arma::find(GLRVecDiff2 == -2) + 1;
+  
+  arma::colvec selected_GLRVec = GLRVec(Idx);
+    
+  int kk = selected_GLRVec.n_elem;
+    
+  //Rcpp::Rcout << "kk:" << kk << "\n";
+    
+  arma::uvec selected_GLRVec_idx = arma::sort_index(selected_GLRVec, "descend");
+  
+  arma::colvec workIdxVec(kk);
+  
+  int tmpIdx;
+  
+  for (int ii = 0; ii < kk; ii++) {
+    
+    tmpIdx = selected_GLRVec_idx(ii);
+    
+    workIdxVec(ii) = Idx(tmpIdx);
+    
+  }
+  
+  arma::colvec EndPoint(kk);
+  EndPoint.fill(arma::datum::nan);
+  
+  arma::colvec EP(kk);
+  
+
+    
+    int flg = 1;
+    int rr = 0;
+    
+    Rcpp::List workModel0;
+    int workIdx;
+    double workGLR;
+    
+    while(flg == 1) {
+      
+      workIdx = workIdxVec(rr);
+      
+      //Rcpp::Rcout << "workIdx:" << workIdx << "\n";
+      
+      workModel0 = model0s(workIdx - (halfWin - 1));
+      workGLR = GLRVec(workIdx);
+      
+      step2 = distPars(windowLength, workModel0, lowerLambda, upperLambda, breakPoint, 
+                   BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim1, maxErr);
+      
+      step3 = distLoglikRatio(windowLength, halfWin - 1, step2, lowerLambda, upperLambda, breakPoint, 
+                   BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim2, maxErr);
+      
+      
+      checkStep3NAN = Rcpp::is_nan(step3);
+      
+      //Rcpp::Rcout << "checkStep3NAN:" << checkStep3NAN << "\n";
+      
+      if (Rcpp::sum(checkStep3NAN == 0) >= minNonNAN) {
+        ////Step4: check the max of GLRs
+        if (GLRSApprox == 1) {
+          step4 = returnCritValKDECpp(step3, alpha);
+        } else {
+          step4 = quantileCpp(step3, alpha);
+        }
+        
+        criticalVal = step4(0);
+        
+        Rcpp::Rcout << "workGLR:" << workGLR << ", criticalVal:" << criticalVal << "\n";
+        
+        if (workGLR >= criticalVal) {
+          
+          EndPoint(rr) = workIdx + 1;
+          //Rcpp::Rcout << "EndPoint:" << EndPoint << "\n";
+          
+        } else {
+          
+          flg = 0;
+          
+        }
+      } else {
+        
+        flg = 0;
+        
+      }
+      
+      
+      rr = rr + 1;  
+      
+      if (maxCP > 0) {
+        if (rr > maxCP) {
+          flg = 0;
+        }
+      }
+
+      
+    }
+    
+  
+  
+  EP = EndPoint(arma::find_finite(EndPoint));
+  EP = EP(sort_index(EP));
+  
+  return out = Rcpp::List::create(Rcpp::Named("GLRVec") = GLRVec,
+                                  Rcpp::Named("EndPoint") = EP,
+                                  Rcpp::Named("model0s") = model0s);
+  
+}
+
 
 
 
