@@ -1969,9 +1969,9 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
   EP = EndPoint(arma::find_finite(EndPoint));
   EP = EP(sort_index(EP));
   
-  return out = Rcpp::List::create(Rcpp::Named("GLRVec") = GLRVec,
-                                  Rcpp::Named("EndPoint") = EP,
-                                  Rcpp::Named("model0s") = model0s);
+  return out = Rcpp::List::create(Rcpp::Named("GLR") = GLRVec,
+                                  Rcpp::Named("ChangePoint") = EP,
+                                  Rcpp::Named("model0") = model0s);
   
 }
 
