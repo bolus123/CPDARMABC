@@ -5,8 +5,12 @@ OmegaMat <- function(n, order, phi, theta) {
     .Call(`_CPDARMABC_OmegaMat`, n, order, phi, theta)
 }
 
-simARIMA <- function(mu, sigma2, innovDist, OmegaMat, BetaFlg, W, Beta) {
-    .Call(`_CPDARMABC_simARIMA`, mu, sigma2, innovDist, OmegaMat, BetaFlg, W, Beta)
+simARIMAMat <- function(mu, sigma2, innovDist, OmegaMat, BetaFlg, W, Beta) {
+    .Call(`_CPDARMABC_simARIMAMat`, mu, sigma2, innovDist, OmegaMat, BetaFlg, W, Beta)
+}
+
+simARIMARec <- function(model, n, mu, sigma2, innovDist, BetaFlg, W, Beta) {
+    .Call(`_CPDARMABC_simARIMARec`, model, n, mu, sigma2, innovDist, BetaFlg, W, Beta)
 }
 
 YeoJohnson <- function(Y, lambda) {
@@ -29,19 +33,19 @@ optModel <- function(Y, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, 
     .Call(`_CPDARMABC_optModel`, Y, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter)
 }
 
-distPars <- function(n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr) {
-    .Call(`_CPDARMABC_distPars`, n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr)
+distPars <- function(n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr, simType) {
+    .Call(`_CPDARMABC_distPars`, n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr, simType)
 }
 
-distLoglikRatio <- function(n, t, distPars0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr) {
-    .Call(`_CPDARMABC_distLoglikRatio`, n, t, distPars0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr)
+distLoglikRatio <- function(n, t, distPars0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr, simType) {
+    .Call(`_CPDARMABC_distLoglikRatio`, n, t, distPars0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr, simType)
 }
 
-binSeg <- function(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN) {
-    .Call(`_CPDARMABC_binSeg`, Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN)
+binSeg <- function(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN, simType) {
+    .Call(`_CPDARMABC_binSeg`, Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN, simType)
 }
 
-SldWin <- function(Y, alpha, GLRSApprox, windowLength, maxCP, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN) {
-    .Call(`_CPDARMABC_SldWin`, Y, alpha, GLRSApprox, windowLength, maxCP, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN)
+SldWin <- function(Y, alpha, GLRSApprox, windowLength, maxCP, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN, simType) {
+    .Call(`_CPDARMABC_SldWin`, Y, alpha, GLRSApprox, windowLength, maxCP, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN, simType)
 }
 

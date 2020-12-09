@@ -1,8 +1,8 @@
-\name{simARIMA}
-\alias{simARIMA}
+\name{simARIMAMat}
+\alias{simARIMAMat}
 \title{abc}
 \usage{
-simARIMA(mu, sigma2, innovDist, OmegaMat, BetaFlg, W, Beta)
+simARIMAMat(mu, sigma2, innovDist, OmegaMat, BetaFlg, W, Beta)
 }
 \arguments{
   \item{mu}{ abc }

@@ -2,7 +2,7 @@
 \alias{distLoglikRatio}
 \title{abc}
 \usage{
-distLoglikRatio(n, t, distPars0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr)
+distLoglikRatio(n, t, distPars0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr, simType)
 }
 \arguments{
   \item{n}{ abc }
@@ -23,6 +23,7 @@ distLoglikRatio(n, t, distPars0, lowerLambda, upperLambda, breakPoint, BetaFlg, 
   \item{innovDist}{ abc }
   \item{nsim}{ abc }
   \item{maxErr}{ abc }
+  \item{simType}{ abc }
 }
 \description{
 	abc

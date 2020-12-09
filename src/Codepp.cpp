@@ -2,66 +2,107 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 
-int InvertQ(const arma::colvec& coef){
-  int out;
-  arma::colvec coef1 = coef;
-  int k = coef1.n_elem;
-  arma::mat blockmat(k, k, arma::fill::zeros);
-  arma::cx_vec eigval;
-  arma::cx_mat eigvec;
-  arma::vec mod;
+int InvertQ(const arma::colvec& coef) {
   
-  int checkCorr1 = arma::all(coef1 < 1);
-  int checkCorr2 = arma::all(coef1 > -1);
-  int tmpcheckCorr3 = 0;
-  int checkCorr3 = 0;
+  int out = 0;
+  int k = coef.n_elem;
+  arma::colvec coefs(k + 1);
   
-  for (int i = 1; i < k; i++) {
-    if (std::abs(coef1(i)) < std::abs(coef1(i - 1))) {
-      tmpcheckCorr3 = tmpcheckCorr3 + 1;
-    }
+  coefs(k) = 1;
+  
+  for (int i = 0; i < k; i++) {
+    coefs(i) = coef(k - i - 1);
   }
   
-  if (tmpcheckCorr3 == k - 1) {
-    checkCorr3 = 1;
-  }
-  
-  //Rcpp::Rcout << "coef1:" << coef1  << "\n";
-  //Rcpp::Rcout << "checkCorr1:" << checkCorr1  << "\n";
-  //Rcpp::Rcout << "checkCorr2:" << checkCorr2  << "\n";
-  
-  if (checkCorr1 == 1 && checkCorr2 == 1 && checkCorr3 == 1) {
+  try{
+    arma::cx_vec comp = arma::roots(coefs);
     
-    for (int i = 0; i < k; i++) {
-      for (int j = 0; j < k; j++){
-        if (i == 0) {
-          blockmat(i, j) = coef1(j);
-        } else if (i > 0) {
-          if ((i - 1) == j) {
-            blockmat(i, j) = 1;
-          }
-        }
-      }
-    }
+    arma::mat re = arma::real(comp);
+    arma::mat im = arma::imag(comp);
     
+    //Rcpp::Rcout << "re:" << re  << "\n";
+    //Rcpp::Rcout << "im:" << im  << "\n";
     
-    arma::eig_gen(eigval, eigvec, blockmat);
+    arma::colvec mod = arma::vectorise(arma::sqrt(arma::square(re) + arma::square(im)));
     
-    mod = arma::pow(arma::pow(arma::real(eigval), 2) + arma::pow(arma::imag(eigval), 2), 0.5);
+    //Rcpp::Rcout << "mod:" << mod  << "\n";
     
-    if (mod.max() >= 1) {
-      out = 0;
-    } else {
+    double minmod = arma::min(mod);
+    
+    //Rcpp::Rcout << "minmod:" << minmod  << "\n";
+    
+    if (minmod >= 1) {
       out = 1;
     }
+  } catch (...) {
     
-  } else {
-    out = 0;
   }
   
   return out;
   
 }
+
+
+//int InvertQ(const arma::colvec& coef){
+//  int out;
+//  arma::colvec coef1 = coef;
+//  int k = coef1.n_elem;
+//  arma::mat blockmat(k, k, arma::fill::zeros);
+//  arma::cx_vec eigval;
+//  arma::cx_mat eigvec;
+//  arma::vec mod;
+//  
+//  int checkCorr1 = arma::all(coef1 < 1);
+//  int checkCorr2 = arma::all(coef1 > -1);
+//  int tmpcheckCorr3 = 0;
+//  int checkCorr3 = 0;
+//  
+//  for (int i = 1; i < k; i++) {
+//    if (std::abs(coef1(i)) < std::abs(coef1(i - 1))) {
+//      tmpcheckCorr3 = tmpcheckCorr3 + 1;
+//    }
+//  }
+//  
+//  if (tmpcheckCorr3 == k - 1) {
+//    checkCorr3 = 1;
+//  }
+//  
+//  //Rcpp::Rcout << "coef1:" << coef1  << "\n";
+//  //Rcpp::Rcout << "checkCorr1:" << checkCorr1  << "\n";
+//  //Rcpp::Rcout << "checkCorr2:" << checkCorr2  << "\n";
+//  
+//  if (checkCorr1 == 1 && checkCorr2 == 1 && checkCorr3 == 1) {
+//    
+//    for (int i = 0; i < k; i++) {
+//      for (int j = 0; j < k; j++){
+//        if (i == 0) {
+//          blockmat(i, j) = coef1(j);
+//        } else if (i > 0) {
+//          if ((i - 1) == j) {
+//            blockmat(i, j) = 1;
+//          }
+//        }
+//      }
+//    }
+//    
+//    
+//    arma::eig_gen(eigval, eigvec, blockmat);
+//    
+//    mod = arma::pow(arma::pow(arma::real(eigval), 2) + arma::pow(arma::imag(eigval), 2), 0.5);
+//    
+//    if (mod.max() >= 1) {
+//      out = 0;
+//    } else {
+//      out = 1;
+//    }
+//    
+//  } else {
+//    out = 0;
+//  }
+//  
+//  return out;
+//  
+//}
 
 arma::mat parsMat(const int& n, const arma::colvec& coef){
   arma::mat out(n, n, arma::fill::zeros);
@@ -285,7 +326,7 @@ arma::colvec simInnov(const int& n, const Rcpp::String& XSim, const Rcpp::Numeri
 }
 
 // [[Rcpp::export]]
-arma::colvec simARIMA(const double& mu, const double& sigma2, const Rcpp::String& innovDist, const arma::mat& OmegaMat, 
+arma::colvec simARIMAMat(const double& mu, const double& sigma2, const Rcpp::String& innovDist, const arma::mat& OmegaMat, 
                       const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta) {
   
   Rcpp::NumericVector XPars = {0, 1};
@@ -302,6 +343,54 @@ arma::colvec simARIMA(const double& mu, const double& sigma2, const Rcpp::String
   
 }
 
+
+
+arma::colvec arimaSimCpp(const Rcpp::List& model, const int& n, const arma::colvec& innov, 
+                          const int& n_start, const arma::colvec& start_innov) {
+  
+  Rcpp::Environment rEnv = Rcpp::Environment::namespace_env("stats");
+  Rcpp::Function fun = rEnv["arima.sim"];
+
+  Rcpp::NumericVector tmp = fun(Rcpp::Named("model", model), Rcpp::Named("n", n), Rcpp::Named("innov", innov), 
+                       Rcpp::Named("n.start", n_start), Rcpp::Named("start.innov", start_innov));
+
+  Rcpp::NumericVector order = model["order"];
+
+  int d = order(1);
+  
+  arma::colvec out(n);
+  
+  for (int i = d; i < n + d; i++) {
+    out(i - d) = tmp(i);
+  }
+  
+  return out;
+  
+}
+
+
+// [[Rcpp::export]]
+arma::colvec simARIMARec(const Rcpp::List& model, const int& n, const double& mu, const double& sigma2, 
+                      const Rcpp::String& innovDist, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta) {
+  
+  Rcpp::NumericVector XPars = {0, 1};
+  
+  Rcpp::NumericVector order = model["order"];
+  
+  int n_start = order(0) + order(2);
+  
+  arma::colvec innov = simInnov(n, innovDist, XPars) * std::sqrt(sigma2);
+  arma::colvec start_innov = simInnov(n_start, innovDist, XPars) * std::sqrt(sigma2);
+  
+  arma::colvec out = arimaSimCpp(model, n, innov, n_start, start_innov) + mu;
+  
+  if (BetaFlg == 1) {
+    out = out + W * Beta;
+  }
+  
+  return out;
+  
+}
 
 
 /////////////////////////////////////////////////////////////////////////
@@ -969,12 +1058,12 @@ Rcpp::List loglikRatioMax(const arma::colvec& Y, const int& minSize,
                            Rcpp::Named("t") = maxT,
                            Rcpp::Named("llrVec") = llrVec,
                            Rcpp::Named("order") = model0["order"], 
-                                                        Rcpp::Named("coef") = model0["coef"],
-                                                                                    Rcpp::Named("sigma2") = model0["sigma2"],
-                                                                                                                  Rcpp::Named("lambda") = model0["lambda"],
-                                                                                                                                                Rcpp::Named("crit") = model0["crit"],
-                                                                                                                                                                            Rcpp::Named("critVal") = model0["critVal"],
-                                                                                                                                                                                                           Rcpp::Named("loglik") = model0["loglik"]);
+                           Rcpp::Named("coef") = model0["coef"],
+                           Rcpp::Named("sigma2") = model0["sigma2"],
+                           Rcpp::Named("lambda") = model0["lambda"],
+                           Rcpp::Named("crit") = model0["crit"],
+                           Rcpp::Named("critVal") = model0["critVal"],
+                           Rcpp::Named("loglik") = model0["loglik"]);
   
   return out;
   
@@ -984,7 +1073,8 @@ Rcpp::List loglikRatioMax(const arma::colvec& Y, const int& minSize,
 Rcpp::List distPars(const int& n, const Rcpp::List& model0, const double& lowerLambda, const double& upperLambda, const int& breakPoint,
                     const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
                     const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, 
-                    const int& maxIter, const Rcpp::String& innovDist, const int& nsim, const int& maxErr) {
+                    const int& maxIter, const Rcpp::String& innovDist, const int& nsim, const int& maxErr, 
+                    const Rcpp::String& simType) {
   
   Rcpp::List out, modelSim;
   int errCode = 1;
@@ -1059,8 +1149,18 @@ Rcpp::List distPars(const int& n, const Rcpp::List& model0, const double& lowerL
   //  mu = mu + muBeta(0, 0);
   //}
   
+  Rcpp::List model;
   
-  OMat = OmegaMat(n, order0, phi, theta);
+  if (simType == "Matrix") {
+   
+    OMat = OmegaMat(n, order0, phi, theta);
+  
+  } else {
+    
+    model = Rcpp::List::create(Rcpp::Named("order") = order0, Rcpp::Named("ar") = phi, Rcpp::Named("ma") = theta);
+    
+  }
+  
   
   for (i = 0; i < nsim; i++) {
     
@@ -1081,7 +1181,15 @@ Rcpp::List distPars(const int& n, const Rcpp::List& model0, const double& lowerL
         
         coefSim = 0;
         
-        X = simARIMA(mu, sigma2, innovDist, OMat, BetaFlg, W, Beta);
+        if (simType == "Matrix") {
+          
+          X = simARIMAMat(mu, sigma2, innovDist, OMat, BetaFlg, W, Beta);
+        
+        } else {
+          
+          X = simARIMARec(model, n, mu, sigma2, innovDist, BetaFlg, W, Beta);
+          
+        }
         
         if (order(4) > 0) {
           Y = invYeoJohnson(X, lambda);
@@ -1211,7 +1319,8 @@ Rcpp::List distPars(const int& n, const Rcpp::List& model0, const double& lowerL
 arma::colvec distLoglikRatio(const int& n, const int& t, const Rcpp::List& distPars0, const double& lowerLambda, const double& upperLambda, 
                              const int& breakPoint, const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
                              const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, 
-                             const int& maxIter, const Rcpp::String& innovDist, const int& nsim, const int& maxErr) {
+                             const int& maxIter, const Rcpp::String& innovDist, const int& nsim, const int& maxErr,
+                             const Rcpp::String& simType) {
   
   Rcpp::NumericMatrix orderMat = distPars0["orderMat"];
   Rcpp::NumericMatrix coefMat = distPars0["coefMat"];
@@ -1330,8 +1439,17 @@ arma::colvec distLoglikRatio(const int& n, const int& t, const Rcpp::List& distP
       //Rcpp::Rcout << "mu:" << mu << "\n";
     }
     
+    Rcpp::List model;
     
-    OMat = OmegaMat(n, order0, phi, theta);
+    if (simType == "Matrix") {
+      
+      OMat = OmegaMat(n, order0, phi, theta);
+      
+    } else {
+      
+      model = Rcpp::List::create(Rcpp::Named("order") = order0, Rcpp::Named("ar") = phi, Rcpp::Named("ma") = theta);
+      
+    }
     
     sigma2 = sigma2Vec(i);
     lambda = lambdaVec(i);
@@ -1360,7 +1478,15 @@ arma::colvec distLoglikRatio(const int& n, const int& t, const Rcpp::List& distP
         
         try{
           
-          X = simARIMA(mu, sigma2, innovDist, OMat, BetaFlg, W, Beta);
+          if (simType == "Matrix") {
+            
+            X = simARIMAMat(mu, sigma2, innovDist, OMat, BetaFlg, W, Beta);
+            
+          } else {
+            
+            X = simARIMARec(model, n, mu, sigma2, innovDist, BetaFlg, W, Beta);
+            
+          }
           
           if (orderMat(i, 4) > 0) {
             Y = invYeoJohnson(X, lambda);
@@ -1526,7 +1652,7 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
                   const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
                   const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, 
                   const int& maxIter, const double& maxLev, const Rcpp::String& innovDist, 
-                  const int& nsim1, const int& nsim2, const int& maxErr, const int& minNonNAN) {
+                  const int& nsim1, const int& nsim2, const int& maxErr, const int& minNonNAN, const Rcpp::String& simType) {
   
   Rcpp::List out;
   
@@ -1672,12 +1798,12 @@ Rcpp::List binSeg(const arma::colvec& Y, const double & alpha, const int& GLRSAp
           
           ////Step2: simulate the distribution of models and parameters
           step2 = distPars(nWorkY, step1, lowerLambda, upperLambda, breakPoint, 
-                           BetaFlg, tmpworkW, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim1, maxErr);
+                           BetaFlg, tmpworkW, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim1, maxErr, simType);
           //Rcpp::Rcout << "step2:" << step2["coefMat"] << "\n";
           
           ////Step3: simulate the distribution of GLRs
           step3 = distLoglikRatio(nWorkY, t, step2, lowerLambda, upperLambda, breakPoint, 
-                                  BetaFlg, tmpworkW, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim2, maxErr);
+                                  BetaFlg, tmpworkW, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim2, maxErr, simType);
           Rcpp::Rcout << "step3:" << step3 << "\n";
           
           checkStep3NAN = Rcpp::is_nan(step3);
@@ -1765,7 +1891,7 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
                   const int& BetaFlg, const arma::mat& W, const arma::colvec& Beta, 
                   const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, 
                   const int& maxIter, const double& maxLev, const Rcpp::String& innovDist, 
-                  const int& nsim1, const int& nsim2, const int& maxErr, const int& minNonNAN) {
+                  const int& nsim1, const int& nsim2, const int& maxErr, const int& minNonNAN, const Rcpp::String& simType) {
   
   Rcpp::List out;
   
@@ -1799,6 +1925,11 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
   Rcpp::NumericVector step4;
   Rcpp::LogicalVector checkStep3NAN;
   double criticalVal;
+
+  arma::colvec critValVec(n);
+  critValVec.fill(arma::datum::inf);
+  critValVec = -critValVec;
+  
   
   int k = W.n_cols - 1;
   
@@ -1833,8 +1964,12 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
       W2 = W.submat(t + 1, 0, ed, k);
     }
     
+    //Rcpp::Rcout << "r:" << r << "\n";
+    
     model0 = optModel(Y0, lowerLambda, upperLambda, breakPoint,
                     BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter);
+    
+    //Rcpp::Rcout << "checkpoint 1" << "\n";
     
     model0s(r) = model0;
     
@@ -1843,19 +1978,9 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
     GLRVec(t) = loglikRatio(Y1, Y2, loglik0, lowerLambda, upperLambda, breakPoint,
            BetaFlg, W1, W2, Beta, crit, max_p, max_d, max_q, tol, maxIter);
     
+    //Rcpp::Rcout << "checkpoint 2" << "\n";
+    
     r = r + 1;
-    
-    
-    
-    //step2 = distPars(windowLength, model0, lowerLambda, upperLambda, breakPoint, 
-    //                 BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim1, maxErr);
-    //Rcpp::Rcout << "step2:" << step2["coefMat"] << "\n";
-    
-    ////Step3: simulate the distribution of GLRs
-    //step3 = distLoglikRatio(windowLength, halfWin - 1, step2, lowerLambda, upperLambda, breakPoint, 
-    //                        BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim2, maxErr);
-    //Rcpp::Rcout << "step3:" << step3 << "\n";
-    
     
     
   }
@@ -1893,7 +2018,7 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
   arma::colvec EndPoint(kk);
   EndPoint.fill(arma::datum::nan);
   
-  arma::colvec EP(kk);
+  arma::colvec EP;
   
 
     
@@ -1904,7 +2029,7 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
     int workIdx;
     double workGLR;
     
-    while(flg == 1) {
+    while(flg == 1 && rr < kk) {
       
       workIdx = workIdxVec(rr);
       
@@ -1914,11 +2039,12 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
       workGLR = GLRVec(workIdx);
       
       step2 = distPars(windowLength, workModel0, lowerLambda, upperLambda, breakPoint, 
-                   BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim1, maxErr);
-      
+                   BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim1, maxErr, simType);
+
       step3 = distLoglikRatio(windowLength, halfWin - 1, step2, lowerLambda, upperLambda, breakPoint, 
-                   BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim2, maxErr);
-      
+                   BetaFlg, W0, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim2, maxErr, simType);
+  
+      //Rcpp::Rcout << "step3:" << step3 << "\n";
       
       checkStep3NAN = Rcpp::is_nan(step3);
       
@@ -1933,6 +2059,7 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
         }
         
         criticalVal = step4(0);
+        critValVec(workIdx) = criticalVal;
         
         Rcpp::Rcout << "workGLR:" << workGLR << ", criticalVal:" << criticalVal << "\n";
         
@@ -1965,250 +2092,18 @@ Rcpp::List SldWin(const arma::colvec& Y, const double & alpha, const int& GLRSAp
     }
     
   
-  
-  EP = EndPoint(arma::find_finite(EndPoint));
-  EP = EP(sort_index(EP));
-  
+  //if (kk > 1) {
+    EP = EndPoint(arma::find_finite(EndPoint));
+    EP = EP(arma::sort_index(EP));
+  //} else if (kk == 1) {
+  //  EP = EndPoint;
+  //}
+
   return out = Rcpp::List::create(Rcpp::Named("GLR") = GLRVec,
+                                  Rcpp::Named("critVal") = critValVec,
                                   Rcpp::Named("ChangePoint") = EP,
                                   Rcpp::Named("model0") = model0s);
   
 }
-
-
-
-
-
-//// [[Rcpp::export]]
-//double simCPDARIMABC(const int& n, const int& t, const double& alpha, const int& IC, const Rcpp::List& model01, 
-//                           const Rcpp::List& model02, const int& GLRSApprox, 
-//                           const double& lowerLambda, const double& upperLambda, const int& breakPoint,
-//                           const Rcpp::String& crit, const int& max_p, const int& max_d, const int& max_q, const double& tol, 
-//                           const int& maxIter, const Rcpp::String& innovDist,
-//                          const int& nsim1, const int& nsim2, const int& maxErr) {
-//  
-//  
-//  //arma::colvec out(nsim);
-//  double out;
-//  arma::colvec Y0(n);
-//  arma::colvec Y01;
-//  arma::colvec Y02; 
-//
-//  arma::colvec order01(5);
-//  arma::colvec order02(5);
-//  Rcpp::NumericVector tmpOrder01 = model01["order"];
-//  Rcpp::NumericVector tmpOrder02 = model02["order"];
-//  
-//  Rcpp::NumericVector tmpCoef01 = model01["coef"];
-//  Rcpp::NumericVector tmpCoef02 = model02["coef"];
-//  arma::colvec phi01(1);
-//  arma::colvec phi02(1);
-//  arma::colvec theta01(1);
-//  arma::colvec theta02(1);
-//  
-//  double mu01 = 0;
-//  double mu02 = 0;
-//  double sigma201 = model01["sigma2"];
-//  double sigma202 = model02["sigma2"];
-//  double lambda01 = model01["lambda"];
-//  double lambda02 = model02["lambda"];
-//  
-//  arma::mat OmegaMat01, OmegaMat02;
-//  
-//  Rcpp::List model0;
-//  double loglik0;
-//  double llr0;
-//  double criticalVal;
-//  Rcpp::List step2;
-//  Rcpp::NumericVector step3;
-//  Rcpp::NumericVector step4;
-//  
-//  arma::mat W(1, 1);
-//  arma::colvec Beta(1);
-//  
-//  int i = 0;
-//  int j = 0;
-//  
-//  for (i = 0; i < 5; i++) {
-//    order01(i) = tmpOrder01(i);
-//    order02(i) = tmpOrder02(i);
-//  }
-//  
-//  //Rcpp::Rcout << "order01:" << order01 << "\n";
-//  //Rcpp::Rcout << "order02:" << order02 << "\n";
-//
-////////////////////////////////////////////////////////////
-//  
-//  int idx = 0;
-//  
-//  if (order01(0) > 0) {
-//    arma::colvec phi01(order01(0));
-//    for (i = idx; i <= idx + order01(0) - 1; i++) {
-//      phi01(i - idx) = tmpCoef01(i);
-//    }
-//    idx = idx + order01(0);
-//  }
-//  
-//  //Rcpp::Rcout << "idx:" << idx << "\n";
-//  
-//  if (order01(2) > 0) {
-//    arma::colvec theta01(order01(2));
-//    for (i = idx; i <= idx + order01(2) - 1; i++) {
-//      theta01(i - idx) = tmpCoef01(i);
-//    }
-//    idx = idx + order01(2);
-//    //Rcpp::Rcout << "theta:" << theta << "\n";
-//  }
-//  
-//  //Rcpp::Rcout << "idx:" << idx << "\n";
-//  
-//  
-//  if (order01(3) > 0) {
-//    mu01 = tmpCoef01(idx);
-//    //Rcpp::Rcout << "mu:" << mu << "\n";
-//  }
-//  
-////////////////////////////////////////////////////////////
-//
-//  idx = 0;
-//  
-//  if (order02(0) > 0) {
-//    arma::colvec phi02(order02(0));
-//    for (i = idx; i <= idx + order02(0) - 1; i++) {
-//      phi02(i - idx) = tmpCoef02(i);
-//    }
-//    idx = idx + order02(0);
-//  }
-//  
-//  //Rcpp::Rcout << "idx:" << idx << "\n";
-//  
-//  if (order02(2) > 0) {
-//    arma::colvec theta02(order02(2));
-//    for (i = idx; i <= idx + order02(2) - 1; i++) {
-//      theta02(i - idx) = tmpCoef02(i);
-//    }
-//    idx = idx + order02(2);
-//    //Rcpp::Rcout << "theta:" << theta << "\n";
-//  }
-//  
-//  //Rcpp::Rcout << "idx:" << idx << "\n";
-//  
-//  
-//  if (order02(3) > 0) {
-//    mu02 = tmpCoef02(idx);
-//    //Rcpp::Rcout << "mu:" << mu << "\n";
-//  }
-//
-//  //Rcpp::Rcout << "order01.subvec(0, 2):" << order01.subvec(0, 2) << "\n";
-//  
-//////////////////////////////////////////////////////////  
-//  if (IC == 0) {
-//    
-//    OmegaMat01 = OmegaMat(t, order01.subvec(0, 2), phi01, theta01);
-//    //Rcpp::Rcout << "OmegaMat01:" << OmegaMat01 << "\n";
-//    OmegaMat02 = OmegaMat(n - t, order02.subvec(0, 2), phi02, theta02);
-//    //Rcpp::Rcout << "OmegaMat02:" << OmegaMat02 << "\n";
-//    
-//  } else if (IC == 1) {
-//    OmegaMat01 = OmegaMat(n, order01.subvec(0, 2), phi01, theta01);
-//    //Rcpp::Rcout << "OmegaMat01:" << OmegaMat01 << "\n";
-//  }
-//  
-//  
-//////////////////////////////////////////////////////////  
-//  
-//  //for (i = 0; i < nsim; i++) {
-//    
-//    if (IC == 0) {
-//      Y01 = simARIMA(mu01, sigma201, innovDist, OmegaMat01, 0, W, Beta);
-//      Y02 = simARIMA(mu02, sigma202, innovDist, OmegaMat02, 0, W, Beta);
-//      
-//      if (order01(4) > 0) {
-//        Y01 = invYeoJohnson(Y01, lambda01);
-//      }
-//      
-//      if (order02(4) > 0) {
-//        Y02 = invYeoJohnson(Y02, lambda02);
-//      }
-//      
-//      for (j = 0; j < n; j++) {
-//        //Rcpp::Rcout << "j:" << j << "\n";
-//        if (j < t) {
-//          Y0(j) = Y01(j);
-//        } else {
-//          //Rcpp::Rcout << "j - t - 1:" << j - t - 1 << "\n";
-//          Y0(j) = Y02(j - t);
-//        }
-//      }
-//    } else if (IC == 1){
-//      Y0 = simARIMA(mu01, sigma201, innovDist, OmegaMat01, 0, W, Beta);
-//                    
-//      if (order01(4) > 0) {
-//        Y0 = invYeoJohnson(Y0, lambda01);
-//      }
-//    }
-//    
-//    //Rcpp::Rcout << "Y0:" << Y0 << "\n";
-//  
-//
-//    model0 = optModel(Y0, lowerLambda, upperLambda, breakPoint,
-//                                 0, W, Beta, crit, max_p, max_d, max_q, tol, 
-//                                 maxIter);
-//    loglik0 = model0["loglik"];
-//    
-//    //Rcpp::Rcout << "loglik0:" << loglik0 << "\n";
-//    
-//    llr0 = loglikRatio(Y0.subvec(0, t - 1), Y0.subvec(t, n - 1), loglik0, 
-//                lowerLambda, upperLambda, breakPoint,
-//                0, W, W, Beta,
-//                crit, max_p, max_d, max_q, tol, maxIter);
-//    
-//    //Rcpp::Rcout << "llr0:" << llr0 << "\n";
-//    
-//    step2 = distPars(n, model0, lowerLambda, upperLambda, breakPoint,
-//             0, W, Beta, crit, max_p, max_d, max_q, tol, 
-//             maxIter, innovDist, nsim1, maxErr);
-//    
-//    step3 = distLoglikRatio(n, t, step2, lowerLambda, upperLambda, breakPoint, 
-//                            0, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, "norm", nsim2, maxErr);
-//    
-//    Rcpp::Rcout << "step3:" << step3 << "\n";
-//    
-//    if (GLRSApprox == 1) {
-//      step4 = returnCritValKDECpp(step3, alpha);
-//      //Rcpp::Rcout << "step4:" << step4 << "\n";
-//    } else {
-//      step4 = quantileCpp(step3, alpha);
-//      //Rcpp::Rcout << "step4:" << step4 << "\n";
-//    }
-//    
-//    criticalVal = step4(0);
-//    Rcpp::Rcout << "criticalVal:" << criticalVal << "\n";
-//    
-//    if (llr0 >= criticalVal) {
-//      //out(i) = 1;
-//      out = 1;
-//    } else {
-//      //out(i) = 0;
-//      out = 0;
-//    }
-//    
-//  //}
-//
-//  return out;
-//  
-//}
-
-
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
-
-
-////////////////////
 
 

@@ -2,7 +2,7 @@
 \alias{distPars}
 \title{abc}
 \usage{
-distPars(n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr)
+distPars(n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, innovDist, nsim, maxErr, simType)
 }
 \arguments{
   \item{n}{ abc }
@@ -22,6 +22,7 @@ distPars(n, model0, lowerLambda, upperLambda, breakPoint, BetaFlg, W, Beta, crit
   \item{innovDist}{ abc }
   \item{nsim}{ abc }
   \item{maxErr}{ abc }
+  \item{simType}{ abc }
 }
 \description{
 	abc

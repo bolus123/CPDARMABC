@@ -3,7 +3,7 @@
 \title{abc}
 \usage{
 binSeg(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint, 
-	BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN)
+	BetaFlg, W, Beta, crit, max_p, max_d, max_q, tol, maxIter, maxLev, innovDist, nsim1, nsim2, maxErr, minNonNAN, simType)
 }
 \arguments{
   \item{Y}{ abc }
@@ -28,6 +28,7 @@ binSeg(Y, alpha, GLRSApprox, minSize, lowerLambda, upperLambda, breakPoint,
   \item{nsim2}{ abc }
   \item{maxErr}{ abc }
   \item{minNonNAN}{ abc }
+  \item{simType}{ abc }
 }
 \description{
 	abc
