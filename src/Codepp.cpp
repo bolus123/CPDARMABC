@@ -31,7 +31,7 @@ int InvertQ(const arma::colvec& coef) {
     
     //Rcpp::Rcout << "minmod:" << minmod  << "\n";
     
-    if (minmod >= 1) {
+    if (minmod > 1) {
       out = 1;
     }
   } catch (...) {
