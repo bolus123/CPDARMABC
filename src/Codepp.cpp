@@ -5,37 +5,46 @@
 int InvertQ(const arma::colvec& coef) {
   
   int out = 0;
-  int k = coef.n_elem;
+  double k = coef.n_elem;
   arma::colvec coefs(k + 1);
   
-  coefs(k) = 1;
+  arma::uvec checkFinite = arma::find_finite(coef);
   
-  for (int i = 0; i < k; i++) {
-    coefs(i) = coef(k - i - 1);
-  }
-  
-  try{
-    arma::cx_vec comp = arma::roots(coefs);
+  if (checkFinite.n_elem == k) {
     
-    arma::mat re = arma::real(comp);
-    arma::mat im = arma::imag(comp);
-    
-    //Rcpp::Rcout << "re:" << re  << "\n";
-    //Rcpp::Rcout << "im:" << im  << "\n";
-    
-    arma::colvec mod = arma::vectorise(arma::sqrt(arma::square(re) + arma::square(im)));
-    
-    //Rcpp::Rcout << "mod:" << mod  << "\n";
-    
-    double minmod = arma::min(mod);
-    
-    //Rcpp::Rcout << "minmod:" << minmod  << "\n";
-    
-    if (minmod > 1) {
+    if (arma::sum(arma::abs(coef) < 0.000001) == k) {
       out = 1;
+    } else {
+      coefs(k) = 1;
+      
+      for (int i = 0; i < k; i++) {
+        coefs(i) = coef(k - i - 1);
+      }
+      
+      try{
+        arma::cx_vec comp = arma::roots(coefs);
+        
+        arma::mat re = arma::real(comp);
+        arma::mat im = arma::imag(comp);
+        
+        //Rcpp::Rcout << "re:" << re  << "\n";
+        //Rcpp::Rcout << "im:" << im  << "\n";
+        
+        arma::colvec mod = arma::vectorise(arma::sqrt(arma::square(re) + arma::square(im)));
+        
+        //Rcpp::Rcout << "mod:" << mod  << "\n";
+        
+        double minmod = arma::min(mod);
+        
+        //Rcpp::Rcout << "minmod:" << minmod  << "\n";
+        
+        if (minmod > 1) {
+          out = 1;
+        }
+      } catch (...) {
+        out = 0;
+      }
     }
-  } catch (...) {
-    
   }
   
   return out;
@@ -43,76 +52,23 @@ int InvertQ(const arma::colvec& coef) {
 }
 
 
-//int InvertQ(const arma::colvec& coef){
-//  int out;
-//  arma::colvec coef1 = coef;
-//  int k = coef1.n_elem;
-//  arma::mat blockmat(k, k, arma::fill::zeros);
-//  arma::cx_vec eigval;
-//  arma::cx_mat eigvec;
-//  arma::vec mod;
-//  
-//  int checkCorr1 = arma::all(coef1 < 1);
-//  int checkCorr2 = arma::all(coef1 > -1);
-//  int tmpcheckCorr3 = 0;
-//  int checkCorr3 = 0;
-//  
-//  for (int i = 1; i < k; i++) {
-//    if (std::abs(coef1(i)) < std::abs(coef1(i - 1))) {
-//      tmpcheckCorr3 = tmpcheckCorr3 + 1;
-//    }
-//  }
-//  
-//  if (tmpcheckCorr3 == k - 1) {
-//    checkCorr3 = 1;
-//  }
-//  
-//  //Rcpp::Rcout << "coef1:" << coef1  << "\n";
-//  //Rcpp::Rcout << "checkCorr1:" << checkCorr1  << "\n";
-//  //Rcpp::Rcout << "checkCorr2:" << checkCorr2  << "\n";
-//  
-//  if (checkCorr1 == 1 && checkCorr2 == 1 && checkCorr3 == 1) {
-//    
-//    for (int i = 0; i < k; i++) {
-//      for (int j = 0; j < k; j++){
-//        if (i == 0) {
-//          blockmat(i, j) = coef1(j);
-//        } else if (i > 0) {
-//          if ((i - 1) == j) {
-//            blockmat(i, j) = 1;
-//          }
-//        }
-//      }
-//    }
-//    
-//    
-//    arma::eig_gen(eigval, eigvec, blockmat);
-//    
-//    mod = arma::pow(arma::pow(arma::real(eigval), 2) + arma::pow(arma::imag(eigval), 2), 0.5);
-//    
-//    if (mod.max() >= 1) {
-//      out = 0;
-//    } else {
-//      out = 1;
-//    }
-//    
-//  } else {
-//    out = 0;
-//  }
-//  
-//  return out;
-//  
-//}
+
 
 arma::mat parsMat(const int& n, const arma::colvec& coef){
   arma::mat out(n, n, arma::fill::zeros);
-  arma::vec coef1 = coef;
-  int k = coef1.n_elem;
+  double k = coef.n_elem;
   int i;
   int j;
   int r;
   
-  int checkInv = InvertQ(coef1);
+  int checkInv = 0;
+
+  //Rcpp::Rcout << "checkFinite:" << checkFinite << "\n";
+  //Rcpp::Rcout << "arma::sum(coef == 0):" << arma::sum(coef == 0) << "\n";
+  
+  //Rcpp::Rcout << "coef:" << coef  << "\n";
+  
+  checkInv = InvertQ(coef);
   
   if (checkInv == 1) {
     
@@ -122,17 +78,18 @@ arma::mat parsMat(const int& n, const arma::colvec& coef){
           if (i == j) {
             out(i, j) = 1;
           } else if ((i - 1 - r) == j) {
-            out(i, j) = coef1(r);
+            out(i, j) = coef(r);
           }
         }
       }
     }
-    
+
   } else {
     //Rcpp::stop("The parameter vector is not invertible/stationary");
     Rcpp::warning("The parameter vector is not invertible/stationary");
+    out.fill(arma::datum::nan);
   }
-  
+
   return out;
   
 }
@@ -759,12 +716,12 @@ Rcpp::List loglikFoward(const arma::colvec& Y, const int& include_mean,
   
   out = Rcpp::List::create(Rcpp::Named("order") = minOrder, 
                            Rcpp::Named("coef") = minModel["coef"],
-                                                         Rcpp::Named("sigma2") = minModel["sigma2"],
-                                                                                         Rcpp::Named("lambda") = lambda,
-                                                                                         Rcpp::Named("crit") = crit,
-                                                                                         Rcpp::Named("critVal") = mincrit,
-                                                                                         Rcpp::Named("loglik") = minModel["loglik"],
-                                                                                                                         Rcpp::Named("fitted") = minModel["fitted"],
+                           Rcpp::Named("sigma2") = minModel["sigma2"],
+                           Rcpp::Named("lambda") = lambda,
+                           Rcpp::Named("crit") = crit,
+                           Rcpp::Named("critVal") = mincrit,
+                           Rcpp::Named("loglik") = minModel["loglik"],
+                           Rcpp::Named("fitted") = minModel["fitted"],
                                                                                                                                                          Rcpp::Named("model") = minModel);
   
   return out;
@@ -950,6 +907,7 @@ Rcpp::List optModel(const arma::colvec& Y, const double& lowerLambda, const doub
   } catch(...) {
     //int errCode4 = 1;
   }
+  
   
   return minModel;
   //return modelNoYeoJohnsonWithMean;
