@@ -394,6 +394,35 @@ arma::colvec YeoJohnson(const arma::colvec& Y, const double& lambda) {
   
 }
 
+double BFunc(const double& X, const double& lambda) {
+  double out = lambda * X + 1;
+  return out;
+}
+
+double AFunc(const double& X, const double& lambda) {
+  double out = std::exp(1 / lambda * std::log(BFunc(X, lambda)));
+  return out;
+}
+
+double DFunc(const double& X, const double& lambda) {
+  double out = (-1) * (2 - lambda) * X + 1;
+  return out;
+}
+
+double CFunc(const double& X, const double& lambda) {
+  double out = std::exp(1 / (2 - lambda) * std::log(DFunc(X, lambda)));
+  return out;
+}
+
+double posFunc(const double& X, const double& lambda) {
+  double out = AFunc(X, lambda) - 1;
+  return out;
+}
+
+double negFunc(const double& X, const double& lambda) {
+  double out = (-1) * CFunc(X, lambda) + 1;
+  return out;
+}
 
 
 // [[Rcpp::export]]
@@ -401,6 +430,8 @@ arma::colvec invYeoJohnson(const arma::colvec& X, const double& lambda) {
   int n = X.n_elem;
   
   arma::colvec out(n);
+  out.fill(arma::datum::nan);
+  
   double tmp;
   
   int i = 0;
@@ -409,20 +440,64 @@ arma::colvec invYeoJohnson(const arma::colvec& X, const double& lambda) {
     
     tmp = X(i);
     
-    if (tmp >= 0) {
+    if (0 < lambda && lambda < 2) {
       
-      if (lambda != 0) {
-        out(i) = std::pow(lambda * tmp + 1, 1 / lambda) - 1;
-      } else {
-        out(i) = std::exp(tmp) - 1;
+      if (tmp >= 0) {
+        
+        out(i) = posFunc(tmp, lambda);
+        
+      } else if (tmp < 0) {
+        
+        out(i) = negFunc(tmp, lambda);
+        
       }
       
-    } else if (tmp < 0) {
+    } else if (lambda < 0) {
       
-      if (lambda != 2) {
-        out(i) = (-1) * std::pow((-1) * (2 - lambda) * tmp + 1, 1 / (2 - lambda)) + 1;
-      } else {
+      if (0 <= tmp && tmp < -1 / lambda ) {
+        
+        out(i) = posFunc(tmp, lambda);
+        
+      } else if (tmp < 0) {
+        
+        out(i) = negFunc(tmp, lambda);
+        
+      }
+      
+    } else if (lambda > 2) {
+      
+      if (tmp >= 0) {
+        
+        out(i) = posFunc(tmp, lambda);
+        
+      } else if (1 / (2 - lambda) < tmp && tmp < 0) {
+        
+        out(i) = negFunc(tmp, lambda);
+        
+      }
+      
+    } else if (lambda == 0) {
+      
+      if (tmp >= 0) {
+        
+        out(i) = std::exp(tmp) - 1;
+        
+      } else if (tmp < 0) {
+        
+        out(i) = negFunc(tmp, lambda);
+        
+      }
+      
+    } else if (lambda == 2) {
+      
+      if (tmp >= 0) {
+        
+        out(i) = posFunc(tmp, lambda);
+        
+      } else if (tmp < 0) {
+        
         out(i) = (-1) * std::exp((-1) * tmp) + 1;
+        
       }
       
     }
@@ -470,12 +545,24 @@ arma::colvec YeoJohnson1stDeriv(const arma::colvec& Y, const double& lambda) {
   
 }
 
+double posFunc2ndDeriv(const double& X, const double& lambda) {
+  double out = ((1 - lambda) * AFunc(X, lambda)) / std::pow(BFunc(X, lambda), 2);
+  return out;
+}
+
+double negFunc2ndDeriv(const double& X, const double& lambda) {
+  double out = ((1 - lambda) * CFunc(X, lambda)) / std::pow(DFunc(X, lambda), 2);
+  return out;
+}
+
 
 arma::colvec invYeoJohnson2ndDeriv(const arma::colvec& X, const double& lambda) {
   
   int n = X.n_elem;
   
   arma::colvec out(n);
+  out.fill(arma::datum::nan);
+  
   double tmp;
   
   int i = 0;
@@ -484,20 +571,64 @@ arma::colvec invYeoJohnson2ndDeriv(const arma::colvec& X, const double& lambda) 
     
     tmp = X(i);
     
-    if (tmp >= 0) {
+    if (0 < lambda && lambda < 2) {
       
-      if (lambda != 0) {
-        out(i) = (1 - lambda) * std::pow(lambda * tmp + 1, 1 / lambda - 2);
-      } else {
-        out(i) = std::exp(tmp);
+      if (tmp >= 0) {
+        
+        out(i) = posFunc2ndDeriv(tmp, lambda);
+        
+      } else if (tmp < 0) {
+        
+        out(i) = negFunc2ndDeriv(tmp, lambda);
+        
       }
       
-    } else if (tmp < 0) {
+    } else if (lambda < 0) {
       
-      if (lambda != 2) {
-        out(i) = (1 - lambda) * std::pow((-1) * (2 - lambda) * tmp + 1, 1 / (2 - lambda) - 2);
-      } else {
+      if (0 <= tmp && tmp < -1 / lambda ) {
+        
+        out(i) = posFunc2ndDeriv(tmp, lambda);
+        
+      } else if (tmp < 0) {
+        
+        out(i) = negFunc2ndDeriv(tmp, lambda);
+        
+      }
+      
+    } else if (lambda > 2) {
+      
+      if (tmp >= 0) {
+        
+        out(i) = posFunc2ndDeriv(tmp, lambda);
+        
+      } else if (1 / (2 - lambda) < tmp && tmp < 0) {
+        
+        out(i) = negFunc2ndDeriv(tmp, lambda);
+        
+      }
+      
+    } else if (lambda == 0) {
+      
+      if (tmp >= 0) {
+        
+        out(i) = std::exp(tmp);
+        
+      } else if (tmp < 0) {
+        
+        out(i) = negFunc2ndDeriv(tmp, lambda);
+        
+      }
+      
+    } else if (lambda == 2) {
+      
+      if (tmp >= 0) {
+        
+        out(i) = posFunc2ndDeriv(tmp, lambda);
+        
+      } else if (tmp < 0) {
+        
         out(i) = (-1) * std::exp((-1) * tmp);
+        
       }
       
     }
